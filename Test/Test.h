@@ -1,5 +1,5 @@
 /*--
-    Test.h  
+    Test.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -21,33 +21,29 @@
 #ifndef CORNUCOPIA_TEST_H_INCLUDED
 #define CORNUCOPIA_TEST_H_INCLUDED
 
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "TestUtils.h"
 
+#include "Debugging.h"
 #include <sstream>
 
 namespace Cornu {}
 namespace Eigen {}
 
-class TestCase
-{
+class TestCase {
 public:
-    TestCase()
-    {
-        allTests().push_back(this);
-    }
+  TestCase() { allTests().push_back(this); }
 
-    virtual ~TestCase()
-    {
-        //should not be called
-    }
+  virtual ~TestCase() {
+    // should not be called
+  }
 
-    virtual void run() = 0; //throws on failure
-    virtual std::string name() { return "Unnamed"; }
+  virtual void run() = 0; // throws on failure
+  virtual std::string name() { return "Unnamed"; }
 
-    static std::vector<TestCase *> &allTests(); //Meyer's singleton
+  static std::vector<TestCase *> &allTests(); // Meyer's singleton
 };
 
-#endif //CORNUCOPIA_TEST_H_INCLUDED
+#endif // CORNUCOPIA_TEST_H_INCLUDED

@@ -1,39 +1,39 @@
 # Root Cornucopia CMakeLists.txt
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+cmake_minimum_required(VERSION 3.10)
 
-PROJECT( Cornucopia )
+project(Cornucopia)
 
-IF(NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE Release CACHE STRING
-      "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
-      FORCE)
-ENDIF(NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE
+      Release
+      CACHE STRING "Choose the type of build, options are: \
+        None Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif()
 
-IF(MSVC)
-   ADD_DEFINITIONS(/arch:SSE2 /fp:fast)
-ELSE(MSVC)
-   ADD_DEFINITIONS(-ffast-math)
-ENDIF(MSVC)
+if(MSVC)
+  add_definitions(/arch:SSE2 /fp:fast)
+  # else() add_definitions(-ffast-math)
+endif()
 
-#Find Eigen 3
-SET(CMAKE_PREFIX_PATH ${Cornucopia_SOURCE_DIR}/../ ${CMAKE_PREFIX_PATH}) 
-SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Cornucopia_SOURCE_DIR})
-FIND_PACKAGE(Eigen3 REQUIRED)
-INCLUDE_DIRECTORIES(${EIGEN3_INCLUDE_DIR})
+# Find Eigen 3
+set(CMAKE_PREFIX_PATH ${Cornucopia_SOURCE_DIR}/../ ${CMAKE_PREFIX_PATH})
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${Cornucopia_SOURCE_DIR})
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
 
-ADD_SUBDIRECTORY( Cornucopia )
-ADD_SUBDIRECTORY( DemoUI )
-ADD_SUBDIRECTORY( Tools )
-ADD_SUBDIRECTORY( Test )
+add_subdirectory(Cornucopia)
+add_subdirectory(DemoUI)
+add_subdirectory(Tools)
+add_subdirectory(Test)
 
-INCLUDE(InstallRequiredSystemLibraries)
+include(InstallRequiredSystemLibraries)
 
-SET(CPACK_PACKAGE_NAME, "Cornucopia")
-SET(CPACK_PACKAGE_VENDOR "Ilya Baran")
-SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/gpl.txt")
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-SET(CPACK_PACKAGE_VERSION_MINOR "1")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
-SET(CPACK_PACKAGE_EXECUTABLES "DemoUI" "Cornucopia DemoUI")
-INCLUDE( CPack )
+set(CPACK_PACKAGE_NAME, "Cornucopia")
+set(CPACK_PACKAGE_VENDOR "Ilya Baran")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/gpl.txt")
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_PACKAGE_EXECUTABLES "DemoUI" "Cornucopia DemoUI")
+include(CPack)

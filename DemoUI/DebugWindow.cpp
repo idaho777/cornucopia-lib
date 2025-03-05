@@ -1,5 +1,5 @@
 /*--
-    DebugWindow.cpp  
+    DebugWindow.cpp
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -19,35 +19,36 @@
 */
 
 #include "DebugWindow.h"
-#include "ui_DebugWindow.h"
 #include "DebuggingImpl.h"
 #include "ScrollScene.h"
+#include "ui_DebugWindow.h"
 
 using namespace std;
 using namespace Eigen;
 
-DebugWindow::DebugWindow()
-{
-    Ui::DebugWindow debugWindowUi;
-    debugWindowUi.setupUi(this);
+DebugWindow::DebugWindow() {
+  Ui::DebugWindow debugWindowUi;
+  debugWindowUi.setupUi(this);
 
-    connect(debugWindowUi.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
+  connect(debugWindowUi.actionQuit, SIGNAL(triggered()), qApp, SLOT(quit()));
 
-    connect(DebuggingImpl::get(), SIGNAL(print(QString)), debugWindowUi.debugText, SLOT(appendPlainText(QString)));
+  connect(DebuggingImpl::get(), SIGNAL(print(QString)), debugWindowUi.debugText,
+          SLOT(appendPlainText(QString)));
 
-    _scene = debugWindowUi.debugView->scene(); //the ScrollView created it
-    debugWindowUi.groupSelWidget->setScene(_scene);
+  connect(debugWindowUi.actionReset_View, SIGNAL(triggered()),
+          debugWindowUi.debugView, SLOT(resetView()));
+
+  _scene = debugWindowUi.debugView->scene(); // the ScrollView created it
+  debugWindowUi.groupSelWidget->setScene(_scene);
 }
 
-void DebugWindow::showEvent(QShowEvent *)
-{
-    DebuggingImpl::get()->setScene(_scene);
+void DebugWindow::showEvent(QShowEvent *) {
+  DebuggingImpl::get()->setScene(_scene);
 }
 
-void DebugWindow::hideEvent(QHideEvent *)
-{
-    _scene->clearGroups("");
-    DebuggingImpl::get()->setScene(NULL);
+void DebugWindow::hideEvent(QHideEvent *) {
+  _scene->clearGroups("");
+  DebuggingImpl::get()->setScene(NULL);
 }
 
-#include "DebugWindow.moc"
+// #include "DebugWindow.moc"

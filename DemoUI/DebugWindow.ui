@@ -348,21 +348,21 @@
     </hint>
    </hints>
   </connection>
-  <connection>
-   <sender>actionReset_View</sender>
-   <signal>triggered()</signal>
-   <receiver>debugView</receiver>
-   <slot>resetView()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>379</x>
-     <y>407</y>
-    </hint>
-   </hints>
-  </connection>
+  <!-- <connection> -->
+  <!--  <sender>actionReset_View</sender> -->
+  <!--  <signal>triggered()</signal> -->
+  <!--  <receiver>debugView</receiver> -->
+  <!--  <slot>resetView()</slot> -->
+  <!--  <hints> -->
+  <!--   <hint type="sourcelabel"> -->
+  <!--    <x>-1</x> -->
+  <!--    <y>-1</y> -->
+  <!--   </hint> -->
+  <!--   <hint type="destinationlabel"> -->
+  <!--    <x>379</x> -->
+  <!--    <y>407</y> -->
+  <!--   </hint> -->
+  <!--  </hints> -->
+  <!-- </connection> -->
  </connections>
 </ui>

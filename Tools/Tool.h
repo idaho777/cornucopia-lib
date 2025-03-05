@@ -1,5 +1,5 @@
 /*--
-    Tool.h  
+    Tool.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -21,31 +21,33 @@
 #ifndef CORNUCOPIA_TOOL_H_INCLUDED
 #define CORNUCOPIA_TOOL_H_INCLUDED
 
-#include <QWidget>
+#include <QRegularExpression>
 #include <QString>
+#include <QWidget>
 
 class QTextStream;
 
-class Tool : public QObject
-{
-    Q_OBJECT
+class Tool : public QObject {
+  Q_OBJECT
 
 public:
-    Tool(QWidget *parent) : QObject(parent), _parentWidget(parent) {}
+  Tool(QWidget *parent) : QObject(parent), _parentWidget(parent) {}
 
-    virtual QString name() const = 0;
-    QWidget *parentWidget() const { return _parentWidget; }
+  virtual QString name() const = 0;
+  QWidget *parentWidget() const { return _parentWidget; }
 
 public slots:
-    virtual void execute() = 0;
+  virtual void execute() = 0;
 
 protected:
-    //utility functions
-    void toolError(QString text);
-    static void transformStream(QTextStream &from, QTextStream &to, const QList<QPair<QRegExp, QString> > &mapping);
+  // utility functions
+  void toolError(QString text);
+  static void
+  transformStream(QTextStream &from, QTextStream &to,
+                  const QList<QPair<QRegularExpression, QString>> &mapping);
 
 private:
-    QWidget *_parentWidget;
+  QWidget *_parentWidget;
 };
 
-#endif //CORNUCOPIA_TOOL_H_INCLUDED
+#endif // CORNUCOPIA_TOOL_H_INCLUDED

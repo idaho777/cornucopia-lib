@@ -1,5 +1,5 @@
 /*--
-    ToolsWindow.cpp  
+    ToolsWindow.cpp
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -25,18 +25,14 @@
 #include <QAction>
 #include <QMenuBar>
 
-ToolsWindow::ToolsWindow()
-{
-    addTool(new AddTool(this));
-    addTool(new FormatTool(this));
+ToolsWindow::ToolsWindow() {
+  addTool(new AddTool(this));
+  addTool(new FormatTool(this));
 }
 
-void ToolsWindow::addTool(Tool *tool)
-{
-    QAction *action = new QAction(tool->name(), this);
-    connect(action, SIGNAL(triggered()), tool, SLOT(execute()));
+void ToolsWindow::addTool(Tool *tool) {
+  QAction *action = new QAction(tool->name(), this);
+  connect(action, SIGNAL(triggered()), tool, SLOT(execute()));
 
-    menuBar()->addAction(action);
+  menuBar()->addAction(action);
 }
-
-#include "ToolsWindow.moc"

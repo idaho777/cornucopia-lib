@@ -1,5 +1,5 @@
 /*--
-    ScrollScene.h  
+    ScrollScene.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -21,43 +21,43 @@
 #ifndef CORNUCOPIA_SCROLLSCENE_H_INCLUDED
 #define CORNUCOPIA_SCROLLSCENE_H_INCLUDED
 
-#include "defs.h"
+// #include "defs.h"
 #include "smart_ptr.h"
 
 #include <vector>
 
 #include <QObject>
 #include <QRectF>
+#include <QRegularExpression>
 #include <QSet>
 
 CORNU_SMART_FORW_DECL(SceneItem);
 class QPainter;
 class QTransform;
 
-class ScrollScene : public QObject
-{
-    Q_OBJECT
+class ScrollScene : public QObject {
+  Q_OBJECT
 public:
-    ScrollScene(QObject *parent = NULL) : QObject(parent) {}
+  ScrollScene(QObject *parent = NULL) : QObject(parent) {}
 
-    QRectF rect() const;
-    void draw(QPainter *p, const QTransform &transform) const;
+  QRectF rect() const;
+  void draw(QPainter *p, const QTransform &transform) const;
 
-    void addItem(SceneItemPtr item);
+  void addItem(SceneItemPtr item);
 
-    void clearGroups(QString groups);
-    bool isGroupVisible(QString group) const;
-    QSet<QString> getAllGroups() const;
+  void clearGroups(QString groups);
+  bool isGroupVisible(QString group) const;
+  QSet<QString> getAllGroups() const;
 
-    void setGroupVisible(QString group, bool visible);
-    void emitSceneChanged() { emit sceneChanged(); }
+  void setGroupVisible(QString group, bool visible);
+  void emitSceneChanged() { emit sceneChanged(); }
 
 signals:
-    void sceneChanged();
+  void sceneChanged();
 
 protected:
-    QSet<QString> _invisibleGroups;
-    std::vector<SceneItemPtr> _items;
+  QSet<QString> _invisibleGroups;
+  std::vector<SceneItemPtr> _items;
 };
 
-#endif //CORNUCOPIA_SCROLLSCENE_H_INCLUDED
+#endif // CORNUCOPIA_SCROLLSCENE_H_INCLUDED

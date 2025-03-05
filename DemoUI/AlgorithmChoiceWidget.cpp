@@ -1,5 +1,5 @@
 /*--
-    AlgorithmChoiceWidget.cpp  
+    AlgorithmChoiceWidget.cpp
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -26,42 +26,45 @@
 using namespace std;
 using namespace Eigen;
 
-AlgorithmChoiceWidget::AlgorithmChoiceWidget(ParamWidget *paramWidget, QWidget *parent, Cornu::AlgorithmStage stage)
-    : QGroupBox(Cornu::AlgorithmBase::get(stage, 0)->stageName().c_str(), parent), _paramWidget(paramWidget), _stage(stage)
-{
-    int num = Cornu::AlgorithmBase::numAlgorithmsForStage(stage);
-    _layout = new QVBoxLayout(this);
+AlgorithmChoiceWidget::AlgorithmChoiceWidget(ParamWidget *paramWidget,
+                                             QWidget *parent,
+                                             Cornu::AlgorithmStage stage)
+    : QGroupBox(Cornu::AlgorithmBase::get(stage, 0)->stageName().c_str(),
+                parent),
+      _paramWidget(paramWidget), _stage(stage) {
+  int num = Cornu::AlgorithmBase::numAlgorithmsForStage(stage);
+  _layout = new QVBoxLayout(this);
 
-    for(int alg = 0; alg < num; ++alg)
-    {
-        QRadioButton *button = new QRadioButton(Cornu::AlgorithmBase::get(stage, alg)->name().c_str(), this);
-        _layout->addWidget(button);
-        _buttons.push_back(button);
-        new AlgorithmSetter(paramWidget, button, _stage, alg);
-    }
+  for (int alg = 0; alg < num; ++alg) {
+    QRadioButton *button = new QRadioButton(
+        Cornu::AlgorithmBase::get(stage, alg)->name().c_str(), this);
+    _layout->addWidget(button);
+    _buttons.push_back(button);
+    new AlgorithmSetter(paramWidget, button, _stage, alg);
+  }
 
-    connect(paramWidget, SIGNAL(parametersChanged()), this, SLOT(parametersChanged()));
+  connect(paramWidget, SIGNAL(parametersChanged()), this,
+          SLOT(parametersChanged()));
 }
 
-void AlgorithmChoiceWidget::parametersChanged()
-{
-    int newAlgorithm = _paramWidget->parameters().getAlgorithm(_stage);
-    if(_buttons[newAlgorithm]->isChecked())
-        return;
-    _buttons[newAlgorithm]->setChecked(true);
+void AlgorithmChoiceWidget::parametersChanged() {
+  int newAlgorithm = _paramWidget->parameters().getAlgorithm(_stage);
+  if (_buttons[newAlgorithm]->isChecked())
+    return;
+  _buttons[newAlgorithm]->setChecked(true);
 }
 
-AlgorithmSetter::AlgorithmSetter(ParamWidget *paramWidget, QRadioButton *button, Cornu::AlgorithmStage stage, int algorithm)
-    : QObject(button), _stage(stage), _algorithm(algorithm)
-{
-    connect(button, SIGNAL(toggled(bool)), this, SLOT(selected(bool)));
-    connect(this, SIGNAL(setAlgorithm(Cornu::AlgorithmStage, int)), paramWidget, SLOT(setAlgorithm(Cornu::AlgorithmStage, int)));
+AlgorithmSetter::AlgorithmSetter(ParamWidget *paramWidget, QRadioButton *button,
+                                 Cornu::AlgorithmStage stage, int algorithm)
+    : QObject(button), _stage(stage), _algorithm(algorithm) {
+  connect(button, SIGNAL(toggled(bool)), this, SLOT(selected(bool)));
+  connect(this, SIGNAL(setAlgorithm(Cornu::AlgorithmStage, int)), paramWidget,
+          SLOT(setAlgorithm(Cornu::AlgorithmStage, int)));
 }
 
-void AlgorithmSetter::selected(bool state)
-{
-    if(state)
-        emit setAlgorithm(_stage, _algorithm);
+void AlgorithmSetter::selected(bool state) {
+  if (state)
+    emit setAlgorithm(_stage, _algorithm);
 }
 
-#include "AlgorithmChoiceWidget.moc"
+// #include "AlgorithmChoiceWidget.moc"

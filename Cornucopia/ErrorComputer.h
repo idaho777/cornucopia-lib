@@ -1,5 +1,5 @@
 /*--
-    ErrorComputer.h  
+    ErrorComputer.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -21,51 +21,58 @@
 #ifndef CORNUCOPIA_ERRORCOMPUTER_H_INCLUDED
 #define CORNUCOPIA_ERRORCOMPUTER_H_INCLUDED
 
-#include "defs.h"
 #include "Algorithm.h"
+#include "defs.h"
 
 NAMESPACE_Cornu
 
-CORNU_SMART_FORW_DECL(CurvePrimitive);
+    CORNU_SMART_FORW_DECL(CurvePrimitive);
 
-class ErrorComputer : public smart_base
-{
+class ErrorComputer : public smart_base {
 public:
-    virtual ~ErrorComputer() {}
-    //Computes the summed squared distance from the samples between from and to (incl.) to the given curve, weighted by distance between samples.
-    //If firstToEndpoint is true, computes the distance of the first sample to the start of the curve (end if reversed==true) instead of to the
-    //projection.  Analogously for lastToEndpoint.
-    virtual double computeError(CurvePrimitiveConstPtr curve, int from, int to,
-                                bool firstToEndpoint = true, bool lastToEndpoint = true, bool reversed = false) const = 0;
-    //Computes the individual error terms in a format suitable for optimization.
-    virtual void computeErrorVector(CurvePrimitiveConstPtr curve, int from, int to,
-                                    Eigen::VectorXd &outError, Eigen::MatrixXd *outErrorDer = NULL,
-                                    bool firstToEndpoint = true, bool lastToEndpoint = true, bool reversed = false) const = 0;
-    //Computes the error to be used in the graph weight--by default, the squared maximum distance to the curve
-    virtual double computeErrorForCost(CurvePrimitiveConstPtr curve, int from, int to,
-                                       bool firstToEndpoint = true, bool lastToEndpoint = true, bool reversed = false) const = 0;
+  virtual ~ErrorComputer() {}
+  // Computes the summed squared distance from the samples between from and to
+  // (incl.) to the given curve, weighted by distance between samples. If
+  // firstToEndpoint is true, computes the distance of the first sample to the
+  // start of the curve (end if reversed==true) instead of to the projection.
+  // Analogously for lastToEndpoint.
+  virtual double computeError(CurvePrimitiveConstPtr curve, int from, int to,
+                              bool firstToEndpoint = true,
+                              bool lastToEndpoint = true,
+                              bool reversed = false) const = 0;
+  // Computes the individual error terms in a format suitable for optimization.
+  virtual void computeErrorVector(CurvePrimitiveConstPtr curve, int from,
+                                  int to, Eigen::VectorXd &outError,
+                                  Eigen::MatrixXd *outErrorDer = NULL,
+                                  bool firstToEndpoint = true,
+                                  bool lastToEndpoint = true,
+                                  bool reversed = false) const = 0;
+  // Computes the error to be used in the graph weight--by default, the squared
+  // maximum distance to the curve
+  virtual double computeErrorForCost(CurvePrimitiveConstPtr curve, int from,
+                                     int to, bool firstToEndpoint = true,
+                                     bool lastToEndpoint = true,
+                                     bool reversed = false) const = 0;
 };
 
 CORNU_SMART_TYPEDEFS(ErrorComputer);
 
-template<>
-struct AlgorithmOutput<ERROR_COMPUTER> : public AlgorithmOutputBase
-{
-    ErrorComputerConstPtr errorComputer;
+template <>
+struct AlgorithmOutput<ERROR_COMPUTER> : public AlgorithmOutputBase {
+  ErrorComputerConstPtr errorComputer;
 };
 
-template<>
-class Algorithm<ERROR_COMPUTER> : public AlgorithmBaseTemplate<ERROR_COMPUTER>
-{
+template <>
+class Algorithm<ERROR_COMPUTER> : public AlgorithmBaseTemplate<ERROR_COMPUTER> {
 public:
-    //override
-    std::string stageName() const { return "Error Computer"; }
+  // override
+  std::string stageName() const { return "Error Computer"; }
 
 private:
-    friend class AlgorithmBase;
-    static void _initialize();
+  friend class AlgorithmBase;
+  static void _initialize();
 };
 
 END_NAMESPACE_Cornu
 
-#endif //CORNUCOPIA_ERRORCOMPUTER_H_INCLUDED
+#endif // CORNUCOPIA_ERRORCOMPUTER_H_INCLUDED

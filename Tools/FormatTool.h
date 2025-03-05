@@ -1,5 +1,5 @@
 /*--
-    FormatTool.h  
+    FormatTool.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -23,24 +23,20 @@
 
 #include "Tool.h"
 
-class FormatTool : public Tool
-{
-    Q_OBJECT
+class FormatTool : public Tool {
+  Q_OBJECT
 public:
-    FormatTool(QWidget *parent) : Tool(parent) {}
+  FormatTool(QWidget *parent) : Tool(parent) {}
 
-    //override
-    QString name() const { return QString("Format files"); }
+  QString name() const override { return QString("Format files"); }
 
-    static void formatFile(QString fileName);
+  static void formatFile(QString fileName);
 
 public slots:
-    //override
-    void execute();
+  void execute() override;
 
 private:
-    void _findAllCodeFiles(QString dir, QStringList &list);
+  void _findAllCodeFiles(QString dir, QStringList &list);
 };
 
-
-#endif //CORNUCOPIA_FORMATTOOL_H_INCLUDED
+#endif // CORNUCOPIA_FORMATTOOL_H_INCLUDED

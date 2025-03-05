@@ -1,5 +1,5 @@
 /*--
-    Algorithm.h  
+    Algorithm.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -27,95 +27,82 @@
 
 NAMESPACE_Cornu
 
-//This header file defines the stages and base classes for algorithms in the fitting pipeline.
-//Fitting proceeds in stages, each one having access to the outputs of all the previous stages
-//through the Fitter class.
+    // This header file defines the stages and base classes for algorithms in
+    // the fitting pipeline. Fitting proceeds in stages, each one having access
+    // to the outputs of all the previous stages through the Fitter class.
 
-enum AlgorithmStage
-{
-    SCALE_DETECTION,
-    PRELIM_RESAMPLING,
-    CURVE_CLOSING,
-    OVERSKETCHING,
-    CORNER_DETECTION,
-    RESAMPLING,
-    ERROR_COMPUTER,
-    PRIMITIVE_FITTING,
-    GRAPH_CONSTRUCTION,
-    PATH_FINDING,
-    COMBINING,
-    NUM_ALGORITHM_STAGES //must be last
-};
+    enum AlgorithmStage {
+      SCALE_DETECTION,
+      PRELIM_RESAMPLING,
+      CURVE_CLOSING,
+      OVERSKETCHING,
+      CORNER_DETECTION,
+      RESAMPLING,
+      ERROR_COMPUTER,
+      PRIMITIVE_FITTING,
+      GRAPH_CONSTRUCTION,
+      PATH_FINDING,
+      COMBINING,
+      NUM_ALGORITHM_STAGES // must be last
+    };
 
-struct AlgorithmOutputBase : public smart_base
-{
-};
+struct AlgorithmOutputBase : public smart_base {};
 
 CORNU_SMART_TYPEDEFS(AlgorithmOutputBase);
 
-//The output of an algorithm stage.  It is specialized for every stage.
-template<int AlgStage>
-struct AlgorithmOutput : public AlgorithmOutputBase
-{
-};
+// The output of an algorithm stage.  It is specialized for every stage.
+template <int AlgStage> struct AlgorithmOutput : public AlgorithmOutputBase {};
 
 class Fitter;
 
-template<int AlgStage>
-class Algorithm
-{
-};
+template <int AlgStage> class Algorithm {};
 
-class AlgorithmBase
-{
+class AlgorithmBase {
 public:
-    virtual std::string name() const { return "Default"; }
-    virtual std::string stageName() const = 0;
-    virtual AlgorithmOutputBasePtr run(const Fitter &) = 0;
+  virtual std::string name() const { return "Default"; }
+  virtual std::string stageName() const = 0;
+  virtual AlgorithmOutputBasePtr run(const Fitter &) = 0;
 
-    static int numAlgorithmsForStage(AlgorithmStage stage) { return (int)_getAlgorithms()[stage].size(); }
-    static AlgorithmBase *get(AlgorithmStage stage, int algorithm) { return _getAlgorithms()[stage][algorithm]; }
+  static int numAlgorithmsForStage(AlgorithmStage stage) {
+    return (int)_getAlgorithms()[stage].size();
+  }
+  static AlgorithmBase *get(AlgorithmStage stage, int algorithm) {
+    return _getAlgorithms()[stage][algorithm];
+  }
 
 protected:
-    static const std::vector<std::vector<AlgorithmBase *> > &_getAlgorithms();
-    static void _addAlgorithm(int stage, AlgorithmBase *algorithm);
+  static const std::vector<std::vector<AlgorithmBase *>> &_getAlgorithms();
+  static void _addAlgorithm(int stage, AlgorithmBase *algorithm);
 
 private:
-    static bool _initializationFinished;
-    static void _initialize();
-    static std::vector<std::vector<AlgorithmBase *> > _algorithms;
+  static bool _initializationFinished;
+  static void _initialize();
+  static std::vector<std::vector<AlgorithmBase *>> _algorithms;
 };
 
-template<int AlgStage>
-class AlgorithmBaseTemplate : public AlgorithmBase
-{
+template <int AlgStage> class AlgorithmBaseTemplate : public AlgorithmBase {
 public:
-    //override
-    AlgorithmOutputBasePtr run(const Fitter &fitter)
-    {
-        smart_ptr<AlgorithmOutput<AlgStage> > out = new AlgorithmOutput<AlgStage>();
-        _run(fitter, *out);
-        return out;
-    }
+  // override
+  AlgorithmOutputBasePtr run(const Fitter &fitter) {
+    smart_ptr<AlgorithmOutput<AlgStage>> out = new AlgorithmOutput<AlgStage>();
+    _run(fitter, *out);
+    return out;
+  }
 
-    static std::vector<std::string> names()
-    {
-        std::vector<std::string> out;
-        for(int i = 0; i < (int)_getAlgorithms().size(); ++i)
-            out.push_back(_getAlgorithms()[AlgStage][i]->name());
+  static std::vector<std::string> names() {
+    std::vector<std::string> out;
+    for (int i = 0; i < (int)_getAlgorithms().size(); ++i)
+      out.push_back(_getAlgorithms()[AlgStage][i]->name());
 
-        return out;
-    }
+    return out;
+  }
 
 protected:
-    AlgorithmBaseTemplate()
-    {
-        _addAlgorithm(AlgStage, this);
-    }
+  AlgorithmBaseTemplate() { _addAlgorithm(AlgStage, this); }
 
-    virtual void _run(const Fitter &fitter, AlgorithmOutput<AlgStage> &out) = 0;
+  virtual void _run(const Fitter &fitter, AlgorithmOutput<AlgStage> &out) = 0;
 };
 
 END_NAMESPACE_Cornu
 
-#endif //CORNUCOPIA_ALGORITHM_H_INCLUDED
+#endif // CORNUCOPIA_ALGORITHM_H_INCLUDED

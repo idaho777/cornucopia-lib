@@ -1,5 +1,5 @@
 /*--
-    ScrollView.h  
+    ScrollView.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -21,8 +21,6 @@
 #ifndef CORNUCOPIA_SCROLLVIEW_H_INCLUDED
 #define CORNUCOPIA_SCROLLVIEW_H_INCLUDED
 
-#include "defs.h"
-
 #include <QAbstractScrollArea>
 #include <QPointF>
 
@@ -32,41 +30,43 @@ class QResizeEvent;
 class QWheelEvent;
 class QMouseEvent;
 
-class ScrollView : public QAbstractScrollArea
-{
-    Q_OBJECT
+class ScrollView : public QAbstractScrollArea {
+  Q_OBJECT
 public:
-    ScrollView(QWidget *parent = NULL);
+  ScrollView(QWidget *parent = NULL);
 
-    ScrollScene *scene() const { return _scene; }
+  ScrollScene *scene() const { return _scene; }
 
-    QPointF sceneToView(const QPointF &scene) const { return scene * _zoom + _offset; }
-    QPointF viewToScene(const QPointF &view) const { return (view - _offset) * (1. / _zoom); }
-    double sceneToViewZoom() const { return _zoom; }
+  QPointF sceneToView(const QPointF &scene) const {
+    return scene * _zoom + _offset;
+  }
+  QPointF viewToScene(const QPointF &view) const {
+    return (view - _offset) * (1. / _zoom);
+  }
+  double sceneToViewZoom() const { return _zoom; }
 
 protected:
-    QPoint _prevMousePos;
+  QPoint _prevMousePos;
 
-    void scrollContentsBy(int dx, int dy);
-    void paintEvent(QPaintEvent *);
-    void resizeEvent(QResizeEvent *);
-    void wheelEvent(QWheelEvent *);
-    void mousePressEvent(QMouseEvent *);
-    void mouseReleaseEvent(QMouseEvent *);
-    void mouseMoveEvent(QMouseEvent *);
+  void scrollContentsBy(int dx, int dy);
+  void paintEvent(QPaintEvent *);
+  void resizeEvent(QResizeEvent *);
+  void wheelEvent(QWheelEvent *);
+  void mousePressEvent(QMouseEvent *);
+  void mouseReleaseEvent(QMouseEvent *);
+  void mouseMoveEvent(QMouseEvent *);
 
 protected slots:
-    void update();
-    void resetView();
+  void update();
+  void resetView();
 
 private:
-    //to map from scene to view: multiply by zoom and add offset
-    double _zoom;
-    QPointF _offset;
+  // to map from scene to view: multiply by zoom and add offset
+  double _zoom;
+  QPointF _offset;
 
-    ScrollScene *_scene;
-    int _updating;
+  ScrollScene *_scene;
+  int _updating;
 };
 
-
-#endif //CORNUCOPIA_SCROLLVIEW_H_INCLUDED
+#endif // CORNUCOPIA_SCROLLVIEW_H_INCLUDED

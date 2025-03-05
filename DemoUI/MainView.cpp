@@ -1,5 +1,5 @@
 /*--
-    MainView.cpp  
+    MainView.cpp
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -20,76 +20,65 @@
 
 #include "MainView.h"
 #include "Document.h"
-#include "ScrollScene.h"
-#include "SceneItem.h"
 #include "Polyline.h"
+#include "SceneItem.h"
+#include "ScrollScene.h"
 
-#include <QMouseEvent>
 #include <QFileDialog>
+#include <QMouseEvent>
 
 using namespace std;
 using namespace Eigen;
 
 MainView::MainView(QWidget *parent, ParamWidget *paramWidget)
-    : ScrollView(parent), _paramWidget(paramWidget), _pointsDrawn(0, Cornu::NOT_CIRCULAR), _tool(DrawTool)
-{
-    _document = new Document(this);
+    : ScrollView(parent), _paramWidget(paramWidget),
+      _pointsDrawn(0, Cornu::NOT_CIRCULAR), _tool(DrawTool) {
+  _document = new Document(this);
 }
 
-void MainView::mousePressEvent(QMouseEvent *e)
-{
-    if(_tool == DrawTool)
-    {
-        if(e->buttons() & Qt::LeftButton)
-        {
-            _pointsDrawn.clear();
+void MainView::mousePressEvent(QMouseEvent *e) {
+  if (_tool == DrawTool) {
+    if (e->buttons() & Qt::LeftButton) {
+      _pointsDrawn.clear();
 
-            _prevMousePos = e->pos();
-            QPointF scenePt = viewToScene(_prevMousePos);
-            _pointsDrawn.push_back(Vector2d(scenePt.x(), scenePt.y()));
+      _prevMousePos = e->pos();
+      QPointF scenePt = viewToScene(_prevMousePos);
+      _pointsDrawn.push_back(Vector2d(scenePt.x(), scenePt.y()));
 
-            return;
-        }
+      return;
     }
-    else if(_tool = SelectTool)
-    {
-    }
+  } else if (_tool == SelectTool) {
+    // Do nothing
+  }
 
-    ScrollView::mousePressEvent(e);
+  ScrollView::mousePressEvent(e);
 }
 
-void MainView::mouseReleaseEvent(QMouseEvent *e)
-{
-    if(_tool == DrawTool)
-    {
-        if(e->button() == Qt::LeftButton)
-        {
-            scene()->clearGroups("currentlyDrawing");
-            if(_pointsDrawn.size() > 1)
-                _document->curveDrawn(new Cornu::Polyline(_pointsDrawn));
-            return;
-        }
+void MainView::mouseReleaseEvent(QMouseEvent *e) {
+  if (_tool == DrawTool) {
+    if (e->button() == Qt::LeftButton) {
+      scene()->clearGroups("currentlyDrawing");
+      if (_pointsDrawn.size() > 1)
+        _document->curveDrawn(new Cornu::Polyline(_pointsDrawn));
+      return;
     }
-    else if(_tool = SelectTool)
-    {
-        QPointF scenePt = viewToScene(e->pos());
+  } else if (_tool == SelectTool) {
+    QPointF scenePt = viewToScene(e->pos());
 
-        _document->selectAt(Vector2d(scenePt.x(), scenePt.y()), e->modifiers() & Qt::SHIFT, 15. / sceneToViewZoom());
-    }
-    ScrollView::mouseReleaseEvent(e);
+    _document->selectAt(Vector2d(scenePt.x(), scenePt.y()),
+                        e->modifiers() & Qt::SHIFT, 15. / sceneToViewZoom());
+  }
+  ScrollView::mouseReleaseEvent(e);
 }
 
-void MainView::mouseMoveEvent(QMouseEvent *e)
-{
-    if(_tool == DrawTool)
-    {
-        if(e->buttons() & Qt::LeftButton)
-        {
-            _prevMousePos = e->pos();
-            QPointF scenePt = viewToScene(_prevMousePos);
-            _pointsDrawn.push_back(Vector2d(scenePt.x(), scenePt.y()));
+void MainView::mouseMoveEvent(QMouseEvent *e) {
+  if (_tool == DrawTool) {
+    if (e->buttons() & Qt::LeftButton) {
+      _prevMousePos = e->pos();
+      QPointF scenePt = viewToScene(_prevMousePos);
+      _pointsDrawn.push_back(Vector2d(scenePt.x(), scenePt.y()));
 
-#if 0 //hacky attempt at online drawing
+#if 0 // hacky attempt at online drawing
             if(_pointsDrawn.size() > 50)
             {
                 _document->curveDrawn(new Cornu::Polyline(_pointsDrawn));
@@ -97,39 +86,33 @@ void MainView::mouseMoveEvent(QMouseEvent *e)
             }
 #endif
 
-            scene()->clearGroups("currentlyDrawing");
-            scene()->addItem(new CurveSceneItem(new Cornu::Polyline(_pointsDrawn), "currentlyDrawing"));
+      scene()->clearGroups("currentlyDrawing");
+      scene()->addItem(new CurveSceneItem(new Cornu::Polyline(_pointsDrawn),
+                                          "currentlyDrawing"));
 
-            return;
-        }
+      return;
     }
-    else if(_tool = SelectTool)
-    {
-    }
-    ScrollView::mouseMoveEvent(e);
+  } else if (_tool == SelectTool) {
+  }
+  ScrollView::mouseMoveEvent(e);
 }
 
-void MainView::clearImage()
-{
-    scene()->clearGroups("Background Image");
+void MainView::clearImage() { scene()->clearGroups("Background Image"); }
+
+void MainView::setImage() {
+  QString fileName = QFileDialog::getOpenFileName(
+      this, "Choose the image file", "", "Image files (*.png *.jpg)");
+
+  if (fileName.isEmpty())
+    return;
+
+  QImage image(fileName);
+
+  if (image.isNull())
+    return;
+
+  scene()->clearGroups("Background Image");
+  scene()->addItem(new ImageSceneItem(image, "Background Image"));
 }
 
-void MainView::setImage()
-{
-    QString fileName = QFileDialog::getOpenFileName(this, "Choose the image file",
-                    "",
-                    "Image files (*.png *.jpg)");
-
-    if(fileName.isEmpty())
-        return;
-
-    QImage image(fileName);
-
-    if(image.isNull())
-        return;
-
-    scene()->clearGroups("Background Image");
-    scene()->addItem(new ImageSceneItem(image, "Background Image"));
-}
-
-#include "MainView.moc"
+// #include "MainView.moc"

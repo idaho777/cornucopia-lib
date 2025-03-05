@@ -1,29 +1,28 @@
 # CmakeLists.txt in Tools
 
-FIND_PACKAGE(Qt4 REQUIRED)
-SET(QT_USE_QTSVG TRUE)
-INCLUDE(${QT_USE_FILE})
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
+set(QT_USE_QTSVG TRUE)
 
-FILE(GLOB Tools_CPP "*.cpp")
-FILE(GLOB Tools_H "*.h")
-FILE(GLOB Tools_UI "*.ui")
+file(GLOB Tools_CPP "*.cpp")
+file(GLOB Tools_H "*.h")
+file(GLOB Tools_UI "*.ui")
 
-QT4_WRAP_UI(Tools_H ${Tools_UI})
+qt6_wrap_ui(Tools_H ${Tools_UI})
 
-LIST(APPEND Tools_Sources ${Tools_CPP} ${Tools_H})
+list(APPEND Tools_Sources ${Tools_CPP} ${Tools_H})
 
-QT4_AUTOMOC(${Tools_Sources})
+# This is for moc files
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-#This is for moc files
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_BINARY_DIR})
+add_executable(CornucopiaTools ${Tools_Sources})
 
-#And this is for config.h
-INCLUDE_DIRECTORIES(${CMAKE_BINARY_DIR})
+set_target_properties(CornucopiaTools PROPERTIES AUTOMOC TRUE)
 
-INCLUDE_DIRECTORIES(${Cornucopia_SOURCE_DIR}/Cornucopia)
+# And this is for config.h
+include_directories(${CMAKE_BINARY_DIR})
 
-ADD_EXECUTABLE(CornucopiaTools ${Tools_Sources})
+include_directories(${Cornucopia_SOURCE_DIR}/Cornucopia)
 
-TARGET_LINK_LIBRARIES(CornucopiaTools Cornucopia ${QT_LIBRARIES})
+target_link_libraries(CornucopiaTools PRIVATE Cornucopia Qt6::Core Qt6::Widgets)
 
-CONFIGURE_FILE(config.h.cmake config.h )
+configure_file(config.h.cmake config.h)

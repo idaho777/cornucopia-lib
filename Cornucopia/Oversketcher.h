@@ -1,5 +1,5 @@
 /*--
-    Oversketcher.h  
+    Oversketcher.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -21,40 +21,39 @@
 #ifndef CORNUCOPIA_OVERSKETCHER_H_INCLUDED
 #define CORNUCOPIA_OVERSKETCHER_H_INCLUDED
 
-#include "defs.h"
 #include "Algorithm.h"
+#include "Debugging.h"
+#include "defs.h"
 
 NAMESPACE_Cornu
 
-CORNU_SMART_FORW_DECL(Polyline);
+    CORNU_SMART_FORW_DECL(Polyline);
 CORNU_SMART_FORW_DECL(PrimitiveSequence);
 
-template<>
-struct AlgorithmOutput<OVERSKETCHING> : public AlgorithmOutputBase
-{
-    PolylineConstPtr output;
-    std::vector<double> parameters; //parameters[i] is the parameter in output of the original point with index i
-    CurvePrimitiveConstPtr startCurve;
-    CurvePrimitiveConstPtr endCurve;
-    int startContinuity;
-    int endContinuity;
-    PrimitiveSequenceConstPtr toAppend;
-    PrimitiveSequenceConstPtr toPrepend;
-    bool finallyClose;
+template <> struct AlgorithmOutput<OVERSKETCHING> : public AlgorithmOutputBase {
+  PolylineConstPtr output;
+  std::vector<double> parameters; // parameters[i] is the parameter in output of
+                                  // the original point with index i
+  CurvePrimitiveConstPtr startCurve;
+  CurvePrimitiveConstPtr endCurve;
+  int startContinuity;
+  int endContinuity;
+  PrimitiveSequenceConstPtr toAppend;
+  PrimitiveSequenceConstPtr toPrepend;
+  bool finallyClose;
 };
 
-template<>
-class Algorithm<OVERSKETCHING> : public AlgorithmBaseTemplate<OVERSKETCHING>
-{
+template <>
+class Algorithm<OVERSKETCHING> : public AlgorithmBaseTemplate<OVERSKETCHING> {
 public:
-    //override
-    std::string stageName() const { return "Oversketcher"; }
+  // override
+  std::string stageName() const { return "Oversketcher"; }
 
 private:
-    friend class AlgorithmBase;
-    static void _initialize();
+  friend class AlgorithmBase;
+  static void _initialize();
 };
 
 END_NAMESPACE_Cornu
 
-#endif //CORNUCOPIA_OVERSKETCHER_H_INCLUDED
+#endif // CORNUCOPIA_OVERSKETCHER_H_INCLUDED

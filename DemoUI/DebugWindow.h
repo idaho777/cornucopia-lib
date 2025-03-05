@@ -1,5 +1,5 @@
 /*--
-    DebugWindow.h  
+    DebugWindow.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -21,26 +21,23 @@
 #ifndef CORNUCOPIA_DEBUGWINDOW_H_INCLUDED
 #define CORNUCOPIA_DEBUGWINDOW_H_INCLUDED
 
-#include "defs.h"
-
 #include <QMainWindow>
 
 class QHideEvent;
 class QShowEvent;
 class ScrollScene;
 
-class DebugWindow : public QMainWindow
-{
-    Q_OBJECT
+class DebugWindow : public QMainWindow {
+  Q_OBJECT
 public:
-    DebugWindow();
+  DebugWindow();
 
 protected:
-    void hideEvent(QHideEvent *);
-    void showEvent(QShowEvent *);
+  void hideEvent(QHideEvent *);
+  void showEvent(QShowEvent *);
 
 private:
-    ScrollScene *_scene;
+  ScrollScene *_scene;
 };
 
-#endif //CORNUCOPIA_DEBUGWINDOW_H_INCLUDED
+#endif // CORNUCOPIA_DEBUGWINDOW_H_INCLUDED

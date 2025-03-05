@@ -1,11 +1,14 @@
 # Cornucopia library CMakeLists.txt
 
-FILE(GLOB Cornucopia_CPP "*.cpp")
-FILE(GLOB Cornucopia_H "*.h")
-LIST(APPEND Cornucopia_Sources ${Cornucopia_CPP} ${Cornucopia_H})
+file(GLOB Cornucopia_CPP "*.cpp")
+file(GLOB Cornucopia_H "*.h")
+# list(APPEND Cornucopia_Sources ${Cornucopia_CPP} ${Cornucopia_H})
 
-ADD_LIBRARY( Cornucopia STATIC ${Cornucopia_Sources} )
+add_library(Cornucopia STATIC ${Cornucopia_CPP})
 
-INSTALL( TARGETS Cornucopia ARCHIVE DESTINATION lib )
+install(TARGETS Cornucopia ARCHIVE DESTINATION lib)
 
-INSTALL( DIRECTORY . DESTINATION include FILES_MATCHING PATTERN "*.h"  )
+# install( DIRECTORY . DESTINATION include FILES_MATCHING PATTERN "*.h")
+
+# Install headers
+install(FILES ${Cornucopia_HEADERS} DESTINATION include)

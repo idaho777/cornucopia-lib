@@ -1,5 +1,5 @@
 /*--
-    AlgorithmChoiceWidget.h  
+    AlgorithmChoiceWidget.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -21,8 +21,8 @@
 #ifndef CORNUCOPIA_ALGORITHMCHOICEWIDGET_H_INCLUDED
 #define CORNUCOPIA_ALGORITHMCHOICEWIDGET_H_INCLUDED
 
-#include "defs.h"
 #include "Algorithm.h"
+#include "defs.h"
 
 #include <QGroupBox>
 #include <QRadioButton>
@@ -30,37 +30,37 @@
 class QVBoxLayout;
 class ParamWidget;
 
-class AlgorithmChoiceWidget : public QGroupBox
-{
-    Q_OBJECT
+class AlgorithmChoiceWidget : public QGroupBox {
+  Q_OBJECT
 public:
-    AlgorithmChoiceWidget(ParamWidget *paramWidget, QWidget *parent, Cornu::AlgorithmStage stage);
+  AlgorithmChoiceWidget(ParamWidget *paramWidget, QWidget *parent,
+                        Cornu::AlgorithmStage stage);
 
 public slots:
-    void parametersChanged();
+  void parametersChanged();
 
 private:
-    ParamWidget *_paramWidget;
-    Cornu::AlgorithmStage _stage;
-    QVBoxLayout *_layout;
-    std::vector<QRadioButton *> _buttons;
+  ParamWidget *_paramWidget;
+  Cornu::AlgorithmStage _stage;
+  QVBoxLayout *_layout;
+  std::vector<QRadioButton *> _buttons;
 };
 
-class AlgorithmSetter : public QObject
-{
-    Q_OBJECT
+class AlgorithmSetter : public QObject {
+  Q_OBJECT
 public:
-    AlgorithmSetter(ParamWidget *paramWidget, QRadioButton *button, Cornu::AlgorithmStage stage, int algorithm);
+  AlgorithmSetter(ParamWidget *paramWidget, QRadioButton *button,
+                  Cornu::AlgorithmStage stage, int algorithm);
 
 public slots:
-    void selected(bool);
+  void selected(bool);
 
 signals:
-    void setAlgorithm(Cornu::AlgorithmStage stage, int algorithm);
+  void setAlgorithm(Cornu::AlgorithmStage stage, int algorithm);
 
 private:
-    Cornu::AlgorithmStage _stage;
-    int _algorithm;
+  Cornu::AlgorithmStage _stage;
+  int _algorithm;
 };
 
-#endif //CORNUCOPIA_ALGORITHMCHOICEWIDGET_H_INCLUDED
+#endif // CORNUCOPIA_ALGORITHMCHOICEWIDGET_H_INCLUDED

@@ -1,5 +1,5 @@
 /*--
-    ToolsWindow.h  
+    ToolsWindow.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -25,14 +25,13 @@
 
 class Tool;
 
-class ToolsWindow : public QMainWindow
-{
-    Q_OBJECT
+class ToolsWindow : public QMainWindow {
+  Q_OBJECT
 public:
-    ToolsWindow();
+  ToolsWindow();
 
 private:
-    void addTool(Tool *tool);
+  void addTool(Tool *tool);
 };
 
-#endif //CORNUCOPIA_TOOLSWINDOW_H_INCLUDED
+#endif // CORNUCOPIA_TOOLSWINDOW_H_INCLUDED

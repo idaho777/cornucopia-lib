@@ -1,5 +1,5 @@
 /*--
-    ScrollScene.cpp  
+    ScrollScene.cpp
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -20,91 +20,82 @@
 
 #include "ScrollScene.h"
 #include "SceneItem.h"
+#include <QtCore/qregularexpression.h>
 
 using namespace std;
 using namespace Eigen;
 
-QRectF ScrollScene::rect() const
-{
-    QRectF out;
-    for(int i = 0; i < (int)_items.size(); ++i)
-    {
-        if(_invisibleGroups.contains(_items[i]->group()))
-            continue;
-        out |= _items[i]->rect();
-    }
+QRectF ScrollScene::rect() const {
+  QRectF out;
+  for (int i = 0; i < (int)_items.size(); ++i) {
+    if (_invisibleGroups.contains(_items[i]->group()))
+      continue;
+    out |= _items[i]->rect();
+  }
 
-    return out;
+  return out;
 }
 
-void ScrollScene::draw(QPainter *p, const QTransform &transform) const
-{
-    for(int i = 0; i < (int)_items.size(); ++i)
-    {
-        if(_invisibleGroups.contains(_items[i]->group()))
-            continue;
-        _items[i]->draw(p, transform);
-    }
+void ScrollScene::draw(QPainter *p, const QTransform &transform) const {
+  for (int i = 0; i < (int)_items.size(); ++i) {
+    if (_invisibleGroups.contains(_items[i]->group()))
+      continue;
+    _items[i]->draw(p, transform);
+  }
 }
 
-void ScrollScene::addItem(SceneItemPtr item)
-{
-    if(item->addToBeginning())
-        _items.insert(_items.begin(), item);
+void ScrollScene::addItem(SceneItemPtr item) {
+  if (item->addToBeginning())
+    _items.insert(_items.begin(), item);
+  else
+    _items.push_back(item);
+  emit sceneChanged();
+}
+
+void ScrollScene::clearGroups(QString groups) {
+  if (groups.isEmpty()) {
+    _items.clear();
+    emit sceneChanged();
+    return;
+  }
+
+  QRegularExpression groupExp(groups);
+
+  int deleted = 0;
+  for (int i = 0; i < (int)_items.size(); ++i) {
+    QRegularExpressionMatch match = groupExp.match(_items[i]->group());
+    if (match.hasMatch())
+      ++deleted;
     else
-        _items.push_back(item);
-    emit sceneChanged();
+      _items[i - deleted] = _items[i];
+  }
+  _items.resize((int)_items.size() - deleted);
+
+  emit sceneChanged();
 }
 
-void ScrollScene::clearGroups(QString groups)
-{
-    if(groups.isEmpty())
-    {
-        _items.clear();
-        emit sceneChanged();
-        return;
-    }
-
-    QRegExp groupExp(groups);
-
-    int deleted = 0;
-    for(int i = 0; i < (int)_items.size(); ++i)
-    {
-        if(groupExp.exactMatch(_items[i]->group()))
-            ++deleted;
-        else
-            _items[i - deleted] = _items[i];
-    }
-    _items.resize((int)_items.size() - deleted);
-
-    emit sceneChanged();
+bool ScrollScene::isGroupVisible(QString group) const {
+  return !_invisibleGroups.contains(group);
 }
 
-bool ScrollScene::isGroupVisible(QString group) const
-{
-    return !_invisibleGroups.contains(group);
+void ScrollScene::setGroupVisible(QString group, bool visible) {
+  if (isGroupVisible(group) == visible)
+    return;
+
+  if (visible)
+    _invisibleGroups.remove(group);
+  else
+    _invisibleGroups.insert(group);
+  emit sceneChanged();
 }
 
-void ScrollScene::setGroupVisible(QString group, bool visible)
-{
-    if(isGroupVisible(group) == visible)
-        return;
+QSet<QString> ScrollScene::getAllGroups() const {
+  QSet<QString> out;
 
-    if(visible)
-        _invisibleGroups.remove(group);
-    else
-        _invisibleGroups.insert(group);
-    emit sceneChanged();
+  for (int i = 0; i < (int)_items.size(); ++i)
+    out.insert(_items[i]->group());
+
+  return out;
 }
 
-QSet<QString> ScrollScene::getAllGroups() const
-{
-    QSet<QString> out;
-
-    for(int i = 0; i < (int)_items.size(); ++i)
-        out.insert(_items[i]->group());
-
-    return out;
-}
-
-#include "ScrollScene.moc"
+// #include "ScrollScene.moc"

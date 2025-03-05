@@ -1,5 +1,5 @@
 /*--
-    AddTool.h  
+    AddTool.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -23,23 +23,22 @@
 
 #include "Tool.h"
 
-class AddTool : public Tool
-{
-    Q_OBJECT
+class AddTool : public Tool {
+  Q_OBJECT
 public:
-    AddTool(QWidget *parent) : Tool(parent) {}
+  AddTool(QWidget *parent) : Tool(parent) {}
 
-    //override
-    QString name() const { return QString("Add..."); }
+  QString name() const override { return QString("Add..."); }
 
 public slots:
-    //override
-    void execute();
+  void execute() override;
 
 private:
-    void _add(QString fileName, bool header, bool source, bool moc, QString project);
-    bool _addOneFile(QString templateName, QString targetName,
-                     const QList<QPair<QRegExp, QString> >& mapping); //returns false on failure
+  void _add(QString fileName, bool header, bool source, bool moc,
+            QString project);
+  bool _addOneFile(QString templateName, QString targetName,
+                   const QList<QPair<QRegularExpression, QString>>
+                       &mapping); // returns false on failure
 };
 
-#endif //CORNUCOPIA_ADDTOOL_H_INCLUDED
+#endif // CORNUCOPIA_ADDTOOL_H_INCLUDED
