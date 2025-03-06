@@ -1,3 +1,10 @@
+This library was updated to run with Qt 6.  This has only been tested for MacOS
+and not Windows.
+
+
+----------
+OLD README
+----------
 This is the source of the Cornucopia library.  This library is intended
 for developers who need to turn a mouse or tablet sketch stroke into a
 smooth curve.  The basic algorithm is described in:
