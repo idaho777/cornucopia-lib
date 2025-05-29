@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>FittingTest Viewer</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <h1>FittingTest Viewer</h1>
+
+    <label for="runSelector">Select run:</label>
+    <select id="runSelector">
+      <option value="">-- choose a run --</option>
+    </select>
+
+    <label for="sortSelector">Sort by:</label>
+    <select id="sortSelector" disabled>
+      <option value="default">Default</option>
+      <option value="s">s</option>
+      <option value="T">T</option>
+      <option value="a">a</option>
+      <option value="noise">noise</option>
+    </select>
+
+    <div id="container"></div>
+
+    <!-- Lightbox overlay -->
+    <div id="overlay">
+      <div class="overlay-content">
+        <span id="overlay-close" class="overlay-close">&times;</span>
+        <img id="overlay-img" src="" />
+        <div id="overlay-caption" class="overlay-caption"></div>
+        <span id="overlay-prev" class="overlay-nav overlay-prev">&#10094;</span>
+        <span id="overlay-next" class="overlay-nav overlay-next">&#10095;</span>
+      </div>
+    </div>
+
+    <!-- modules load order matters -->
+    <script src="js/dataLoader.js"></script>
+    <script src="js/renderer.js"></script>
+    <script src="js/overlay.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
