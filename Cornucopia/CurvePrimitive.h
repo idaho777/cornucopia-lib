@@ -2,6 +2,10 @@
     CurvePrimitive.h  
 
     This file is part of the Cornucopia curve sketching library.
+    Copyright (C) 2025 Joonho Kim (joonho@dgp.toronto.edu)
+
+    ==Old Copyright==
+    This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
 
     This program is free software: you can redistribute it and/or modify
@@ -29,7 +33,7 @@ NAMESPACE_Cornu
 CORNU_SMART_FORW_DECL(CurvePrimitive);
 
 /*
-    A CurvePrimitive is a line, arc, or a clothoid, defined by 4-6 parameters.
+    A CurvePrimitive is a line, arc, clothoid, or anticlothoid, defined by 4-6 parameters.
 */
 class CurvePrimitive : public Curve
 {
@@ -42,7 +46,8 @@ public:
     {
         LINE = 0,
         ARC,
-        CLOTHOID
+        ANTICLOTHOID,
+        CLOTHOID,
     };
 
     enum Param

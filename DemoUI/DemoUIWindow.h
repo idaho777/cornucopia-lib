@@ -1,5 +1,5 @@
 /*--
-    DemoUIWindow.h  
+    DemoUIWindow.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -27,15 +27,14 @@
 
 class DebugWindow;
 
-class DemoUIWindow : public QMainWindow
-{
-    Q_OBJECT
+class DemoUIWindow : public QMainWindow {
+  Q_OBJECT
 public:
-    DemoUIWindow();
-    ~DemoUIWindow();
+  DemoUIWindow();
+  ~DemoUIWindow();
 
 private:
-    DebugWindow *_debugWindow;
+  DebugWindow *_debugWindow;
 };
 
-#endif //CORNUCOPIA_DEMOUIWINDOW_H_INCLUDED
+#endif // CORNUCOPIA_DEMOUIWINDOW_H_INCLUDED

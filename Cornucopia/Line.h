@@ -1,5 +1,5 @@
 /*--
-    Line.h  
+    Line.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -21,53 +21,56 @@
 #ifndef CORNUCOPIA_LINE_H_INCLUDED
 #define CORNUCOPIA_LINE_H_INCLUDED
 
-#include "defs.h"
 #include "CurvePrimitive.h"
+#include "defs.h"
 
 NAMESPACE_Cornu
 
-CORNU_SMART_FORW_DECL(Line);
+    CORNU_SMART_FORW_DECL(Line);
 
-class Line : public CurvePrimitive
-{
+class Line : public CurvePrimitive {
 public:
-    Line() {} //uninitialized
-    Line(const Vec &p1, const Vec &p2);
+  Line() {} // uninitialized
+  Line(const Vec &p1, const Vec &p2);
 
-    //overrides
-    void eval(double s, Vec *pos, Vec *der = NULL, Vec *der2 = NULL) const;
+  // overrides
+  void eval(double s, Vec *pos, Vec *der = NULL, Vec *der2 = NULL) const;
 
-    double project(const Vec &point) const;
+  double project(const Vec &point) const;
 
-    Vec pos(double s) const { return _startPos() + s * _der; }
-    Vec der(double s) const { return _der; }
-    Vec der2(double s) const { return Vec::Zero(); }
+  Vec pos(double s) const { return _startPos() + s * _der; }
+  Vec der(double s) const { return _der; }
+  Vec der2(double s) const { return Vec::Zero(); }
 
-    double angle(double s) const { return _startAngle(); }
-    double curvature(double s) const { return 0; }
+  double angle(double s) const { return _startAngle(); }
+  double curvature(double s) const { return 0; }
 
-    double endAngle() const { return _startAngle(); }
-    double startCurvature() const { return 0; }
-    double endCurvature() const { return 0; }
+  double endAngle() const { return _startAngle(); }
+  double startCurvature() const { return 0; }
+  double endCurvature() const { return 0; }
 
-    PrimitiveType getType() const { return LINE; }
+  PrimitiveType getType() const { return LINE; }
 
-    void trim(double sFrom, double sTo);
-    void flip();
-    CurvePrimitivePtr clone() const { LinePtr out = new Line(); out->setParams(_params); return out; }
-    void derivativeAt(double s, ParamDer &out, ParamDer &outTan) const;
-    void derivativeAtEnd(int continuity, EndDer &out) const;
+  void trim(double sFrom, double sTo);
+  void flip();
+  CurvePrimitivePtr clone() const {
+    LinePtr out = new Line();
+    out->setParams(_params);
+    return out;
+  }
+  void derivativeAt(double s, ParamDer &out, ParamDer &outTan) const;
+  void derivativeAtEnd(int continuity, EndDer &out) const;
 
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 protected:
-    //override
-    void _paramsChanged() { _der = Vec(cos(_startAngle()), sin(_startAngle())); }
-    bool isValidImpl() const;
+  // override
+  void _paramsChanged() { _der = Vec(cos(_startAngle()), sin(_startAngle())); }
+  bool isValidImpl() const;
 
 private:
-    Vec _der;
+  Vec _der;
 };
 
 END_NAMESPACE_Cornu
 
-#endif //CORNUCOPIA_LINE_H_INCLUDED
+#endif // CORNUCOPIA_LINE_H_INCLUDED

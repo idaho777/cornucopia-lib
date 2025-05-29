@@ -1,5 +1,5 @@
 /*--
-    SimpleAPI.h  
+    SimpleAPI.h
 
     This file is part of the Cornucopia curve sketching library.
     Copyright (C) 2010 Ilya Baran (baran37@gmail.com)
@@ -21,55 +21,60 @@
 #ifndef CORNUCOPIA_SIMPLEAPI_H_INCLUDED
 #define CORNUCOPIA_SIMPLEAPI_H_INCLUDED
 
-//The point of this file is to provide a minimalistic API without dependencies on Eigen or anything else.
-//To use Cornucopia, you only need to include this file, construct a vector of Points, Parameters, and run the fit(...) function.
+// The point of this file is to provide a minimalistic API without dependencies
+// on Eigen or anything else. To use Cornucopia, you only need to include this
+// file, construct a vector of Points, Parameters, and run the fit(...)
+// function.
 
 #include "Parameters.h"
 
-namespace Cornu
-{
+namespace Cornu {
 
-struct Point //basic point class
+struct Point // basic point class
 {
-    Point() : x(0), y(0) {}
-    Point(double inX, double inY) : x(inX), y(inY) {}
+  Point() : x(0), y(0) {}
+  Point(double inX, double inY) : x(inX), y(inY) {}
 
-    double x;
-    double y;
+  double x;
+  double y;
 };
 
-struct BasicPrimitive
-{
-    enum PrimitiveType
-    {
-        LINE = 0,
-        ARC,
-        CLOTHOID
-    };
+struct BasicPrimitive {
+  enum PrimitiveType {
+    LINE = 0,
+    ARC,
+    // CLOTHOID
+    ANTICLOTHOID
+  };
 
-    PrimitiveType type;
-    Point start;
-    double length;
-    double startAngle;
-    double startCurvature;
-    double curvatureDerivative;
+  PrimitiveType type;
+  Point start;
+  double length;
+  double startAngle;
+  double startCurvature;
+  double curvatureDerivative;
 
-    //Evaluates this primitive at (arclength) parameter s (between 0 and length) and returns the position and first and second derivatives.
-    //This function is slower than using CurvePrimitive's evaluators
-    void eval(double s, Point *outPos, Point *outDer = NULL, Point *outDer2 = NULL) const;
+  // Evaluates this primitive at (arclength) parameter s (between 0 and length)
+  // and returns the position and first and second derivatives. This function is
+  // slower than using CurvePrimitive's evaluators
+  void eval(double s, Point *outPos, Point *outDer = NULL,
+            Point *outDer2 = NULL) const;
 };
 
-//The basic API function: takes a vector of points and a Parameters object (see Parameters.h)
-//and returns a vector of primitives and (optionally) whether the curve is closed
-std::vector<BasicPrimitive> fit(const std::vector<Point> &points, const Parameters &parameters, bool *outClosed = NULL);
+// The basic API function: takes a vector of points and a Parameters object (see
+// Parameters.h) and returns a vector of primitives and (optionally) whether the
+// curve is closed
+std::vector<BasicPrimitive> fit(const std::vector<Point> &points,
+                                const Parameters &parameters,
+                                bool *outClosed = NULL);
 
-struct BasicBezier
-{
-    Point controlPoint[4];
+struct BasicBezier {
+  Point controlPoint[4];
 };
 
-std::vector<BasicBezier> toBezierSpline(const std::vector<BasicPrimitive> &curve, double tolerance);
+std::vector<BasicBezier>
+toBezierSpline(const std::vector<BasicPrimitive> &curve, double tolerance);
 
-} //end of namespace Cornu
+} // end of namespace Cornu
 
-#endif //CORNUCOPIA_SIMPLEAPI_H_INCLUDED
+#endif // CORNUCOPIA_SIMPLEAPI_H_INCLUDED

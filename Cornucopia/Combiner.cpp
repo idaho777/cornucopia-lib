@@ -599,6 +599,7 @@ public:
 
 protected:
   void _run(const Fitter &fitter, AlgorithmOutput<COMBINING> &out) {
+    // Getting Intermediate Results
     smart_ptr<const AlgorithmOutput<GRAPH_CONSTRUCTION>> graph =
         fitter.output<GRAPH_CONSTRUCTION>();
     const vector<FitPrimitive> &primitives =
@@ -611,12 +612,13 @@ protected:
 
     VectorC<CurvePrimitiveConstPtr> outV;
 
-    // if a single primitive
+    // Solving for geometric primitives
     if (graph->edges[path[0]].continuity == -1) {
+      // if a single primitive
       outV = VectorC<CurvePrimitiveConstPtr>(1, NOT_CIRCULAR);
       outV[0] = primitives[graph->edges[path[0]].startVtx].curve;
-    } else // solve the nonlinear problem
-    {
+    } else {
+      // solve the nonlinear problem
       MulticurveProblem problem(fitter);
       vector<LSBoxConstraint> constraints = problem.getConstraints();
       LSSolver solver(&problem, constraints);
@@ -634,13 +636,13 @@ protected:
       outV = problem.curves();
     }
 
-    //==== track what happens to parameters ====
+    // track what happens to parameters
     out.parameters = fitter.output<RESAMPLING>()->parameters;
     PolylineConstPtr resampledCurve = fitter.output<RESAMPLING>()->output;
     const VectorC<Vector2d> &resampled = resampledCurve->pts();
 
-    vector<int> finalPrimitives; // gather the indices of the graph vertices
-                                 // corresponding to the primitives
+    // gather the indices of the graph vertices corresponding to the primitives
+    vector<int> finalPrimitives;
     for (int i = 0; i < (int)path.size(); ++i)
       finalPrimitives.push_back(graph->edges[path[i]].startVtx);
     if (outV.size() > (int)finalPrimitives.size())
@@ -648,22 +650,19 @@ protected:
 
     assert(outV.size() == finalPrimitives.size());
 
-    vector<double> idxToParam(
-        resampled.size()); // idx is the index into the resampled array
+    // idx is the index into the resampled array
+    vector<double> idxToParam(resampled.size());
     vector<double> idxToDistSq(resampled.size(), 1e10);
 
+    // for each primitive see what projects to it
     double lenSoFar = 0;
-    for (int i = 0; i < outV.size();
-         ++i) // for each primitive see what projects to it
-    {
+    for (int i = 0; i < outV.size(); ++i) {
       const FitPrimitive &primitive =
           primitives[graph->vertices[finalPrimitives[i]].primitiveIdx];
-      for (int j = primitive.startIdx;;
-           ++j) // project each associated resampled point onto this primitive
-      {
-        if (j == (int)resampled.size()) // be careful with starts and ends of
-                                        // oversketched primitives
-        {
+      // project each associated resampled point onto this primitive
+      for (int j = primitive.startIdx;; ++j) {
+        // be careful with starts and ends of oversketched primitives
+        if (j == (int)resampled.size()) {
           if (closed)
             j = 0;
           else
@@ -713,6 +712,7 @@ protected:
       finalParam += idxToParam[ci.index()];
       prevToFinal.add(lenSoFar, finalParam);
     }
+
     // adjust parameters into range
     for (int i = 0; i < (int)out.parameters.size(); ++i) {
       out.parameters[i] -= resampledCurve->idxToParam(minParamSample);

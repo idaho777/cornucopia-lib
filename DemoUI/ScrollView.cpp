@@ -19,7 +19,6 @@
 */
 
 #include "ScrollView.h"
-#include "SceneItem.h"
 #include "ScrollScene.h"
 
 #include <QMouseEvent>

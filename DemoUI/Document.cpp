@@ -53,7 +53,8 @@ void Document::curveDrawn(Cornu::PolylineConstPtr polyline) {
   sketch.name = _getNextSketchName();
   sketch.params = _view->paramWidget()->parameters();
 
-  // compute which curve (among the selected ones) we're oversketching
+  // Oversketch: compute which curve (among the selected ones) we're
+  // oversketching
   pair<double, double> minDist;
   int best = -1;
   Vector2d startPos = polyline->startPos();
