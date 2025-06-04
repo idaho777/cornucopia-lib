@@ -132,6 +132,8 @@ public:
   AnticlothoidFitter() : _totalLength(0) {}
 
   AnticlothoidPtr getCurve() const;
+  AnticlothoidPtr getCurvev1() const;
+  AnticlothoidPtr getCurvev2() const;
 
   bool verifyCandidate(double &error) const;
 

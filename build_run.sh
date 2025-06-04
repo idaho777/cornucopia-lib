@@ -1,12 +1,15 @@
-#!/bin/bash
-# set -e
+#!/usr/bin/env bash
+#set -e
 
-# By default, run cmake, make, and run
-DO_CMAKE=true
-DO_MAKE=true
-DO_TEST=true
-DO_PLOT=true
-DO_GIFS=true
+# --------------------------------------------------------------------------------
+# By default we do *nothing* until you ask.  At the end, if you asked for no
+# steps at all, we'll turn them all on.
+# --------------------------------------------------------------------------------
+DO_CMAKE=false
+DO_MAKE=false
+DO_TEST=false
+DO_PLOT=false
+DO_GIFS=false
 
 CMAKE_ARGS=""
 MAKE_ARGS="-j$(sysctl -n hw.ncpu)"
@@ -14,68 +17,64 @@ EXEC_ARGS=""
 PLOT_ARGS=""
 GIF_ARGS=""
 
-# Parse arguments
-if [[ "$1" == "help" || "$1" == "--help" || "$1" == "-h" ]]; then
-  echo "Usage: $0 [cmake|make|run|plot [CSV]|gifs] [--cmake ARGS] [--make ARGS] [--run ARGS] [--plot CSV] [--gifs DATE]"
-  echo ""
-  echo "Commands:"
-  echo "  cmake         Run only cmake step"
-  echo "  make          Run only make step"
-  echo "  run           Run only test executable"
-  echo "  plot [CSV]    Run plot script (optionally with CSV file)"
-  echo "  gifs [DATE]   Run GIF creation script (optionally with DATE)"
-  echo ""
-  echo "Options:"
-  echo "  --cmake ARGS  Pass ARGS to cmake"
-  echo "  --make ARGS   Pass ARGS to make"
-  echo "  --run ARGS    Pass ARGS to test executable"
-  echo "  --plot CSV    Pass CSV file to plot script"
-  echo "  --gifs DATE   Pass DATE to GIF script"
-  echo ""
-  echo "If no command is given, runs cmake, make, test, plot, and gifs in order."
-  exit 0
-fi
+STEPS_SPECIFIED=false
 
+# --------------------------------------------------------------------------------
+# Usage / help
+# --------------------------------------------------------------------------------
+usage() {
+  cat <<EOF
+Usage: $0 [cmake] [make] [run] [plot] [gifs] [--cmake ARGS] [--make ARGS] [--run ARGS] [--plot CSV] [--gifs DATE]
+
+If you give no step-names (cmake/make/run/plot/gifs), all five will run by default.
+If you list one or more of cmake/make/run/plot/gifs, *only* those will run (in the
+order shown below), plus any of the --* argument-flags you supply.
+
+Commands:
+  cmake         Configure project with cmake
+  make          Build with make
+  run           Run the test executable
+  plot          Run plot script
+  gifs          Run GIF-maker script
+
+Options:
+  --cmake ARGS  Passed verbatim to cmake
+  --make ARGS   Passed verbatim to make
+  --run ARGS    Passed verbatim to the test binary
+  --plot CSV    Passed as argument to scripts/plot.py
+  --gifs DATE   Passed as argument to scripts/make-gifs.sh
+
+EOF
+}
+
+# --------------------------------------------------------------------------------
+# Parse positional commands + options
+# --------------------------------------------------------------------------------
 while [[ $# -gt 0 ]]; do
   case "$1" in
   cmake)
     DO_CMAKE=true
-    DO_MAKE=false
-    DO_TEST=false
-    DO_PLOT=false
-    DO_GIFS=false
+    STEPS_SPECIFIED=true
     shift
     ;;
   make)
-    DO_CMAKE=false
     DO_MAKE=true
-    DO_TEST=false
-    DO_PLOT=false
-    DO_GIFS=false
+    STEPS_SPECIFIED=true
     shift
     ;;
   run)
-    DO_CMAKE=false
-    DO_MAKE=false
     DO_TEST=true
-    DO_PLOT=false
-    DO_GIFS=false
+    STEPS_SPECIFIED=true
     shift
     ;;
   plot)
-    DO_CMAKE=false
-    DO_MAKE=false
-    DO_TEST=false
     DO_PLOT=true
-    DO_GIFS=false
+    STEPS_SPECIFIED=true
     shift
     ;;
   gifs)
-    DO_CMAKE=false
-    DO_MAKE=false
-    DO_TEST=false
-    DO_PLOT=false
     DO_GIFS=true
+    STEPS_SPECIFIED=true
     shift
     ;;
   --cmake)
@@ -98,46 +97,62 @@ while [[ $# -gt 0 ]]; do
     GIF_ARGS="$2"
     shift 2
     ;;
+  help | --help | -h)
+    usage
+    exit 0
+    ;;
   *)
     echo "❌ Unknown argument: $1"
+    usage
     exit 1
     ;;
   esac
 done
 
-# Run selected steps
-$DO_CMAKE && {
-  echo "🛠️Running CMake..."
-  cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -S . "$CMAKE_ARGS"
-}
+# --------------------------------------------------------------------------------
+# If the user never specified ANY of the five steps, turn them ALL on
+# --------------------------------------------------------------------------------
+if ! $STEPS_SPECIFIED; then
+  DO_CMAKE=true
+  DO_MAKE=true
+  DO_TEST=true
+  DO_PLOT=true
+  DO_GIFS=true
+fi
 
-$DO_MAKE && {
-  echo "⚙️ Running Make..."
-  make -C build "$MAKE_ARGS"
-}
+# --------------------------------------------------------------------------------
+# Run steps in canonical order
+# --------------------------------------------------------------------------------
 
-$DO_TEST && {
-  echo "🧲 Running ./build/Test/Test $EXEC_ARGS"
-  ./build/Test/Test "$EXEC_ARGS"
-}
+if $DO_CMAKE; then
+  echo "🛠️  Running cmake..."
+  cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug -S . $CMAKE_ARGS
+fi
 
-$DO_PLOT && {
-  echo "📊 Plotting..."
+if $DO_MAKE; then
+  echo "⚙️  Running make..."
+  make -C build $MAKE_ARGS
+fi
+
+if $DO_TEST; then
+  echo "🧲  Running tests..."
+  ./build/Test/Test $EXEC_ARGS
+fi
+
+if $DO_PLOT; then
+  echo "📊  Plotting..."
   if [[ -n "$PLOT_ARGS" ]]; then
-    echo "📄 plot.py: $PLOT_ARGS"
     python scripts/plot.py "$PLOT_ARGS"
   else
-    echo "📂 No CSV file specified. Plot new data."
     python scripts/plot.py
   fi
-}
+fi
 
-$DO_GIFS && {
-  echo "🎥 Making gifs..."
-  if [[ -n "$GIF_ARGS" ]]; then
-    echo " Using DATE: $GIF_ARGS"
-    ./scripts/make-gifs.sh "$GIF_ARGS"
-  else
-    ./scripts/make-gifs.sh
-  fi
-}
+if $DO_GIFS; then
+  echo "🎥  Generating GIFs... disabled"
+  # if [[ -n "$GIF_ARGS" ]]; then
+  #   ./scripts/make-gifs.sh "$GIF_ARGS"
+  # else
+  #   ./scripts/make-gifs.sh
+  # fi
+fi

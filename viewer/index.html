@@ -6,6 +6,23 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
+    <div
+      style="
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+        padding: 10px;
+        margin-bottom: 16px;
+      "
+    >
+      <strong>Warning:</strong> If images are not loading, please run
+      <code>python -m http.server 8000</code> and open
+      <a href="http://localhost:8000/viewer" target="_blank"
+        >http://localhost:8000</a
+      >
+      to view this page.
+    </div>
+
     <h1>FittingTest Viewer</h1>
 
     <label for="runSelector">Select run:</label>
@@ -16,10 +33,10 @@
     <label for="sortSelector">Sort by:</label>
     <select id="sortSelector" disabled>
       <option value="default">Default</option>
-      <option value="s">s</option>
-      <option value="T">T</option>
-      <option value="a">a</option>
-      <option value="noise">noise</option>
+      <option value="s">s: Arc Length Range</option>
+      <option value="T">T: Translation</option>
+      <option value="a">a: Anticlothoid Circle Radius</option>
+      <option value="noise">noise: Added Vertex noice</option>
     </select>
 
     <div id="container"></div>

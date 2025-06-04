@@ -17,135 +17,84 @@ def read_csv_data(
     filename: str,
 ) -> tuple[
     list[tuple[float, float]],
-    tuple[float, float, float, float] | None,
+    tuple[float, float, float, float, float, float, float, float],
     list[tuple[float, float]],
-    tuple[float, float, float, float] | None,
+    tuple[float, float, float, float, float, float, float, float],
     list[tuple[float, float]],
 ]:
-    sampled_pts: list[tuple[float, float]] = []
-    fitted_transform: tuple[float, float, float, float] | None = None
-    fitted_pts: list[tuple[float, float]] = []
-    actual_transform: tuple[float, float, float, float] | None = None
-    actual_pts: list[tuple[float, float]] = []
+    """
+    Reads a file with three blocks:
+      Sampled points
+      Fitted Anticlothoid
+      Actual Anticlothoid
 
-    section = None
-    saw_header = False
+    each block has a header line, then data lines.
+    For the fitted/actual blocks, the first data line is the 4-value transform,
+    then a header "x,y", then (x,y) point lines.
+    """
+    # load & strip
+    lines = [L.strip() for L in open(filename, "r") if L.strip()]
 
-    with open(filename, "r", encoding="utf-8") as f:
-        for raw_line in f:
-            line = raw_line.strip()
-            if not line:
-                continue
-            if line == "Sampled points":
-                section = "sampled"
-                saw_header = False
-                continue
-            if line == "Fitted Anticlothoid":
-                section = "fitted"
-                saw_header = False
-                continue
-            if line == "Actual Anticlothoid":
-                section = "actual"
-                saw_header = False
-                continue
+    # find where each block starts
+    i_s = lines.index("Sampled points")
+    i_f = lines.index("Fitted Anticlothoid")
+    i_a = lines.index("Actual Anticlothoid")
 
-            if section == "sampled":
-                if not saw_header:
-                    saw_header = True
-                    continue
-                parts = line.split(",")
-                if len(parts) >= 2:
-                    try:
-                        x, y = float(parts[0]), float(parts[1])
-                        sampled_pts.append((x, y))
-                    except ValueError:
-                        pass
+    # --- sampled points: skip header + its "x,y" line ---
+    sampled_lines = lines[i_s + 2 : i_f]
+    sampled_pts = [tuple(map(float, L.split(","))) for L in sampled_lines]
 
-            elif section == "fitted":
-                if fitted_transform is None:
-                    if line.startswith("startx"):
-                        continue
-                    parts = line.split(",")
-                    if len(parts) == 4:
-                        try:
-                            fitted_transform = tuple(map(float, parts))
-                        except ValueError:
-                            fitted_transform = None
-                elif not saw_header:
-                    if line.startswith("x"):
-                        saw_header = True
-                        continue
-                else:
-                    parts = line.split(",")
-                    if len(parts) >= 2:
-                        try:
-                            x, y = float(parts[0]), float(parts[1])
-                            fitted_pts.append((x, y))
-                        except ValueError:
-                            pass
+    # --- fitted: the very next line is transform, then skip its "x,y" header ---
+    fitted_data = tuple(map(float, lines[i_f + 2].split(",")))
+    fitted_pts_lines = lines[i_f + 4 : i_a]
+    fitted_pts = [tuple(map(float, L.split(","))) for L in fitted_pts_lines]
 
-            elif section == "actual":
-                if actual_transform is None:
-                    if line.startswith("startx"):
-                        continue
-                    parts = line.split(",")
-                    if len(parts) == 4:
-                        try:
-                            actual_transform = tuple(map(float, parts))
-                        except ValueError:
-                            actual_transform = None
-                elif not saw_header:
-                    if line.startswith("x"):
-                        saw_header = True
-                        continue
-                else:
-                    parts = line.split(",")
-                    if len(parts) >= 2:
-                        try:
-                            x, y = float(parts[0]), float(parts[1])
-                            actual_pts.append((x, y))
-                        except ValueError:
-                            pass
+    # --- actual: same pattern as fitted ---
+    actual_data = tuple(map(float, lines[i_a + 2].split(",")))
+    actual_pts_lines = lines[i_a + 4 :]
+    actual_pts = [tuple(map(float, L.split(","))) for L in actual_pts_lines]
 
-    return sampled_pts, fitted_transform, fitted_pts, actual_transform, actual_pts
+    return sampled_pts, fitted_data, fitted_pts, actual_data, actual_pts
 
 
 def draw_circle(
     ax: Axes,
-    transform: tuple[float, float, float, float],
+    data: tuple[float, ...],
     curve_color: str,
     arrow_scale: float = 0.5,
 ) -> None:
-    tx, ty, a, theta = transform
+    tx, ty, a, theta = data[:4]
     t = np.linspace(0.0, 2.0 * np.pi, 200)
-    ax.plot(tx + a * np.cos(t), ty + a * np.sin(t), "--", color=curve_color)
-    ax.plot(tx, ty, "o", color=curve_color)
+    _ = ax.plot(tx + a * np.cos(t), ty + a * np.sin(t), "--", color=curve_color)
+    _ = ax.plot(tx, ty, "o", color=curve_color)
 
     cos_t, sin_t = math.cos(theta), math.sin(theta)
     ux = np.array([cos_t, sin_t]) * a * arrow_scale
     uy = np.array([-sin_t, cos_t]) * a * arrow_scale
 
-    ax.arrow(tx, ty, ux[0], ux[1], color="red", width=0.02, head_width=0.1)
-    ax.arrow(tx, ty, uy[0], uy[1], color="blue", width=0.02, head_width=0.1)
+    _ = ax.arrow(tx, ty, ux[0], ux[1], color="red", width=0.02, head_width=0.1)
+    _ = ax.arrow(tx, ty, uy[0], uy[1], color="blue", width=0.02, head_width=0.1)
 
 
-def format_circle_info(
-    prefix: str, transform: tuple[float, float, float, float]
-) -> str:
-    tx, ty, a, theta = transform
-    return f"{prefix}:\ncenter=({tx:.2f},{ty:.2f})\nr={a:.2f}\nθ={theta:.2f}"
+def format_circle_info(prefix: str, data: tuple, pre=True) -> str:
+    tx, ty, a, theta, start_ang, end_ang, length, start_rad, end_rad, error = data
+    if pre:
+        return f"{prefix}:\ncenter=({tx:.2f},{ty:.2f})\nr={a:.2f}\nθ={theta:.2f},\n\nstart_angle={start_ang:.2f}°\nend_angle={end_ang:.2f}°\nlength={length:.2f}\nstart_radius={start_rad:.2f}\nend_radius={end_rad:.2f}\nerror={error:.2f}"
+    return f"{prefix}:\n({tx:.2f},{ty:.2f})=center\n{a:.2f}=r\n{theta:.2f}=θ,\n\n{start_ang:.2f}°=start_angle\n{end_ang:.2f}°=end_angle\n{length:.2f}=length\n{start_rad:.2f}=start_radius\n{end_rad:.2f}=end_radius\n{error:.2f}=error"
 
 
 def plot_scene(csv_path: Path, output_dir: Path) -> None:
     sampled, fitted_t, fitted, actual_t, actual = read_csv_data(csv_path)
 
-    fitted_color = "darkorange"
-    actual_color = "dimgrey"
+    fitted_color = "limegreen"
+    actual_color = "darkorange"
 
+    # 2×2 grid
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
-    fig.subplots_adjust(right=0.8)
+    # make room on the right for a single legend
+    fig.subplots_adjust(right=0.75)
 
-    # 1) Sampled vs Fitted
+    # --- subplot 1: Sampled vs Fitted ---
     ax = axes[0, 0]
     if sampled:
         xs, ys = zip(*sampled)
@@ -156,10 +105,9 @@ def plot_scene(csv_path: Path, output_dir: Path) -> None:
     if fitted_t:
         draw_circle(ax, fitted_t, fitted_color)
     ax.set_title("Sampled vs Fitted")
-    ax.legend(loc="upper left")
     ax.set_aspect("equal")
 
-    # 2) Sampled vs Actual
+    # --- subplot 2: Sampled vs Actual ---
     ax = axes[0, 1]
     if sampled:
         xs, ys = zip(*sampled)
@@ -170,10 +118,9 @@ def plot_scene(csv_path: Path, output_dir: Path) -> None:
     if actual_t:
         draw_circle(ax, actual_t, actual_color)
     ax.set_title("Sampled vs Actual")
-    ax.legend(loc="upper left")
     ax.set_aspect("equal")
 
-    # 3) Fitted vs Actual
+    # --- subplot 3: Fitted vs Actual ---
     ax = axes[1, 0]
     if fitted:
         xs, ys = zip(*fitted)
@@ -186,10 +133,9 @@ def plot_scene(csv_path: Path, output_dir: Path) -> None:
     if actual_t:
         draw_circle(ax, actual_t, actual_color)
     ax.set_title("Fitted vs Actual")
-    ax.legend(loc="upper left")
     ax.set_aspect("equal")
 
-    # 4) All three
+    # --- subplot 4: All Curves ---
     ax = axes[1, 1]
     if sampled:
         xs, ys = zip(*sampled)
@@ -205,34 +151,45 @@ def plot_scene(csv_path: Path, output_dir: Path) -> None:
     if actual_t:
         draw_circle(ax, actual_t, actual_color)
     ax.set_title("All Curves")
-    ax.legend(loc="upper left")
     ax.set_aspect("equal")
 
+    # grid on all
     for a in axes.flat:
         a.grid(True)
 
-    # Two info boxes on the right
+    # --- single legend on the right ---
+    handles, labels = axes[1, 1].get_legend_handles_labels()
+    fig.legend(
+        handles,
+        labels,
+        loc="center left",
+        bbox_to_anchor=(0.9, 0.4),
+        frameon=False,
+        fontsize=9,
+    )
+
+    # --- info boxes to the right ---
     if fitted_t:
         fig.text(
-            0.82,
-            0.65,
-            format_circle_info("Fitted", fitted_t),
+            0.9,
+            0.6,
+            format_circle_info("Fitted", fitted_t, pre=True),
             color=fitted_color,
             va="center",
-            ha="left",
+            ha="right",
             fontsize=9,
-            bbox=dict(boxstyle="round,pad=0.3", fc="white", ec=fitted_color),
+            # bbox=dict(boxstyle="round,pad=0.3", fc="white", ec=fitted_color),
         )
     if actual_t:
         fig.text(
-            0.82,
-            0.35,
-            format_circle_info("Actual", actual_t),
+            0.9,
+            0.6,
+            format_circle_info("Actual", actual_t, pre=False),
             color=actual_color,
             va="center",
             ha="left",
             fontsize=9,
-            bbox=dict(boxstyle="round,pad=0.3", fc="white", ec=actual_color),
+            # bbox=dict(boxstyle="round,pad=0.3", fc="white", ec=actual_color),
         )
 
     stem = csv_path.stem

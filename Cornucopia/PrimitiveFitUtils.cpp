@@ -337,7 +337,9 @@ Vector4d ClothoidFitter::_getRhs(double s, double y, double z) {
 //                            Anticlothoid Fitting
 // ============================================================================
 
-AnticlothoidPtr AnticlothoidFitter::getCurve() const {
+AnticlothoidPtr AnticlothoidFitter::getCurve() const { return getCurvev2(); }
+
+AnticlothoidPtr AnticlothoidFitter::getCurvev1() const {
   if (_pts.size() < 3) {
     return new Anticlothoid(Vector2d(0, 0), 0, 1, 1, 1);
   }
@@ -442,6 +444,82 @@ AnticlothoidPtr AnticlothoidFitter::getCurve() const {
   return new Anticlothoid(start, startAngle, length, r0, a);
 }
 
+AnticlothoidPtr AnticlothoidFitter::getCurvev2() const {
+  if (_pts.size() < 3) {
+    return new Anticlothoid(Vector2d(0, 0), 0, 1, 1, 1);
+  }
+
+  double _error;
+  if (!verifyCandidate(_error)) {
+    return new Anticlothoid(Vector2d(0, 0), 0, 0, 0, 0);
+  }
+
+  Eigen::VectorXd arcLengths = calculateArcLengths();
+  assert(arcLengths.size() == _pts.size() - 1);
+
+  Eigen::VectorXd radii = calculateRadiusOfCurvatures();
+  assert(radii.size() == arcLengths.size() - 1);
+
+  // We only use interior points
+  double slope, intercept;
+  VectorXd arcLengthshead = arcLengths.head(arcLengths.size() - 1);
+  VectorXd radiiSq = radii.array().square();
+  _error = fitLineLeastSquares(arcLengthshead, radiiSq, slope, intercept);
+
+  // Sn = S(tn) - S(t1) = S(pn) - S(p1)
+  // get radius of curvature's rn, r1
+  // Say we have [p1, p2, p3, p4, p5], [s1, s2, s3, s4], [r1, r2, r2]
+  // p1 ---- p2 ---- p3 ---- p4 ---- p5
+  //     s1      s2      s3      s4
+  //         r1      r2      r3
+  //
+  // p2, L1, r1
+  // p4, L3, r3
+  double s1 = arcLengths[0], sn_1 = arcLengths[arcLengths.size() - 2];
+  double Sn = sn_1 - s1;
+  double r1 = sqrt(slope * s1 + intercept);
+  double rn = sqrt(slope * sn_1 + intercept);
+
+  double rnr1 = (rn * rn - r1 * r1);
+  double a = rnr1 / (2 * Sn); // a = (rn^2 - r1^2)/(2Sn)
+  double r0 = sqrt(intercept);
+  // double t1 = (2 * Sn * r1) / rnr1; // t1 = 2(Sn r1)/(rn^2 - r1^2)
+  // double tn = (2 * Sn * rn) / rnr1; // tn = 2(Sn rn)/(rn^2 - r1^2)
+  Debugging::get()->printf("s1: %4.2f, sn_1: %4.2f, Sn: %4.2f, "
+                           "r1: %4.2f, rn: %4.2f, rnr1: %4.2f, "
+                           "a: %4.2f, r0: %4.2f",
+                           s1, sn_1, Sn, r1, rn, rnr1, a, r0);
+
+  Vector2d start = _pts[0];
+
+  double firstAngle = atan2(_pts[1][1] - _pts[0][1], _pts[1][0] - _pts[0][0]);
+  double nextAngle = atan2(_pts[2][1] - _pts[1][1], _pts[2][0] - _pts[1][0]);
+  firstAngle = AngleUtils::toRange(firstAngle);
+  nextAngle = AngleUtils::toRange(nextAngle);
+  double rawDelta = nextAngle - firstAngle; // Handle crossing the x axis
+  double delta = std::remainder(rawDelta, 2 * M_PI); // wraps into (-π, π]
+  double startAngle = firstAngle - delta * 0.5;
+
+  double length = arcLengths[arcLengths.size() - 1];
+
+  // Find (s, r^2) for s = 0
+  // double rnrn = rn * rn;
+  // double r1r1 = r1 * r1;
+  // double slope = (rnrn - r1r1) / (sn_1 - s1);
+  // double dy = a * s1;
+  // double r0r0 = r1r1 - dy;
+  // double r0 = sqrt(abs(r0r0));
+
+  // Debugging::get()->printf("r1: %4.2f, rn: %4.2f, "
+  //                          "a: %4.2f, dy: %4.2f, r0r0: %4.2f, r0: %4.2f",
+  //                          r1, rn, a, dy, r0r0, r0);
+
+  // Debugging::get()->printf("start: %4.2f %4.2f, startAngle: %4.2f, length: "
+  //                          "%4.2f, r0: %4.2f, a: %4.2f",
+  //                          start[0], start[1], startAngle, length, r0, a);
+  return new Anticlothoid(start, startAngle, length, r0, a);
+}
+
 void AnticlothoidFitter::addPoint(const Vector2d &pt) {
   // Similar to ClothoidFitter.
   _pts.push_back(pt);
@@ -476,38 +554,16 @@ bool AnticlothoidFitter::verifyCandidate(double &error) const {
   VectorXd arcLengthsRaw = calculateArcLengths();
   VectorXd arcLengths = arcLengthsRaw.head(arcLengthsRaw.size() - 1);
   VectorXd radii = calculateRadiusOfCurvatures();
-  VectorXd curvatures = radii.array().inverse();
-
   assert(arcLengths.size() == radii.size());
-
-#if 0
-  cout << "x(t)" << endl;
-  for (auto p : _pts) {
-    cout << p[0] << endl;
-  }
-  cout << "y(t)" << endl;
-  for (auto p : _pts) {
-    cout << p[1] << endl;
-  }
-
-  // Arc lengths and radius of curvatures
-  cout << "Discrete Arc Lengths" << endl;
-  cout << arcLengths << endl;
-  cout << "Discrete RoC" << endl;
-  cout << radii << endl;
-  cout << "Discrete Curvatures" << endl;
-  cout << curvatures << endl;
-#endif
 
   // Perform Least Sqaures fit
   double slope, intercept;
   VectorXd radiiSq = radii.array().square();
   error = fitLineLeastSquares(arcLengths, radiiSq, slope, intercept);
-  // Debugging::get()->printf("Slope: %f, Intercept: %f, Error: %f", slope,
-  //                          intercept, error);
   exportPlotData("./verify.csv", arcLengths, radiiSq, slope, intercept, error);
-  return true;
+
   // return error < 30; // TODO: Pick error value.
+  return true;
 }
 
 Eigen::VectorXd AnticlothoidFitter::calculateArcLengths() const {

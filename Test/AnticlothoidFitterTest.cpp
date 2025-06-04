@@ -41,7 +41,17 @@ using namespace Cornu;
 
 class AnticlothoidFitterTest : public TestCase {
   using Vec2 = Vector2d;
-  struct FittingTest {
+  struct AnticlothoidFittingTestParams {
+    /**
+     * This struct holds the parameters for the anticlothoid fitting test.
+     * a: radius of the anticlothoid parametric circle.
+     * ts: vector of time values for sampling the anticlothoid.
+     * noise: noise level to be added to the sampled points.
+     * validationError: expected maximum error for validation.
+     * fittingError: expected maximum error for fitting.
+     * T: translation vector to apply to the anticlothoid.
+     * theta: rotation angle to apply to the anticlothoid.
+     */
     double a;
     vector<double> ts;
     double noise;
@@ -50,9 +60,9 @@ class AnticlothoidFitterTest : public TestCase {
     Vec2 T;
     double theta;
 
-    FittingTest(double a, vector<double> ts, double noise,
-                double validationError, double fittingError, const Vector2d &T,
-                double theta)
+    AnticlothoidFittingTestParams(double a, vector<double> ts, double noise,
+                                  double validationError, double fittingError,
+                                  const Vector2d &T, double theta)
         : a(a), ts(ts), noise(noise), validationError(validationError),
           fittingError(fittingError), T(T), theta(theta) {}
 
@@ -76,11 +86,11 @@ class AnticlothoidFitterTest : public TestCase {
         oss << " " << setw(3) << t;
       oss << "]";
 
-      Debugging::get()->printf(
-          "FittingTest: a:% 4.2f, noise:% 4.2f, VE:% 4.2f, FE:% 4.2f, T:[% "
-          "4.2f,% 4.2f], R:% 4.2f, ts:%s",
-          a, noise, validationError, fittingError, T[0], T[1], theta,
-          oss.str().c_str());
+      Debugging::get()->printf("AnticlothoidFittingTestParams: a:% 4.2f, "
+                               "noise:% 4.2f, VE:% 4.2f, FE:% 4.2f, T:[% "
+                               "4.2f,% 4.2f], R:% 4.2f, ts:%s",
+                               a, noise, validationError, fittingError, T[0],
+                               T[1], theta, oss.str().c_str());
     }
 
     AnticlothoidPtr getCurve() {
@@ -99,28 +109,54 @@ class AnticlothoidFitterTest : public TestCase {
 
       return new Anticlothoid(start, angle, length, r1, a);
     }
+
+    Vec2 sample_ac(double t, double a) {
+      double x = a * cos(t) + t * a * sin(t);
+      double y = a * sin(t) - t * a * cos(t);
+      return Vec2(x, y);
+    }
+
+    vector<Vec2> sample_ac() {
+      vector<Vec2> pts;
+      pts.reserve(ts.size());
+      for (double t : ts) {
+        Vec2 pt = sample_ac(t, a);
+        pt += a * noise * Vec2::Random(); // Noise
+        pts.push_back(Rotation2D(theta) * pt + T);
+      }
+      return pts;
+    }
   };
 
 public:
   std::string name() { return "AnticlothoidFitterTests"; }
 
   void run() {
+    /**
+     * Run the anticlothoid fitting tests and exports the resulting
+     * predicted and actual Anticlothoid curves to CSV files.
+     *
+     * The CSV files are read using the `build_run.sh` script.`
+     */
     string dirname = "./runs/fits-" + today_YYMMDD() + "/csv/";
     createDirectory(dirname);
 
-    vector<FittingTest> tests = setupPoints();
-    for (FittingTest test : tests) {
-      // test.print();
-
-      vector<Vec2> pts = sample_ac(test);
+    for (AnticlothoidFittingTestParams test : setupTests()) {
+      vector<Vec2> pts = test.sample_ac();
 
       AnticlothoidFitter fitter;
-      std::for_each(pts.begin(), pts.end(),
-                    [&](const Vec2 p) { fitter.addPoint(p); });
-      AnticlothoidPtr ptr = fitter.getCurve();
-      // AnticlothoidPtr ptr = test.getCurve();
+      for (const Vec2 &p : pts) {
+        fitter.addPoint(p);
+      }
+      AnticlothoidPtr predictedPtr = fitter.getCurve();
 
-      exportPlotData(dirname + test.getName() + ".csv", test, pts, ptr);
+      double error;
+      fitter.verifyCandidate(error);
+      // AnticlothoidPtr ptr = test.getCurve();   // Use the actual
+      // anticlothoid
+
+      exportPlotData(dirname + test.getName() + ".csv", test, pts, predictedPtr,
+                     error);
 
       // double analytical_length =
       //     0.5 * test.a * (test.ts.back() * test.ts.back());
@@ -133,7 +169,8 @@ public:
     }
   }
 
-  void testValidation(vector<Vec2> polyline, FittingTest test) {
+  void testValidation(vector<Vec2> polyline,
+                      AnticlothoidFittingTestParams test) {
     // Run a candidate fitting
     AnticlothoidFitter fitter;
     std::for_each(polyline.begin(), polyline.end(),
@@ -156,9 +193,10 @@ public:
   // ==========================================================================
   //                                Helpers
   // ==========================================================================
-  vector<FittingTest> setupPoints() {
-    vector<FittingTest> tests;
+  vector<AnticlothoidFittingTestParams> setupTests() {
+    vector<AnticlothoidFittingTestParams> tests;
 
+    // Time values
     vector<vector<double>> ts;
     vector<double> t1;
     for (double s = 0; s < 2; s += 0.2)
@@ -180,32 +218,35 @@ public:
       t4.push_back(sqrt(2 * s));
     ts.push_back(t4);
 
+    // Translations
     vector<Vector2d> Ts;
     Ts.push_back(Vector2d(0.0, 0.0));
-    Ts.push_back(Vector2d(217.0, 300.0));
-    Ts.push_back(Vector2d(400.0, -50.0));
-    Ts.push_back(Vector2d(-100.0, -200.0));
-    Ts.push_back(Vector2d(-800.0, 300.0));
+    // Ts.push_back(Vector2d(217.0, 300.0));
+    // Ts.push_back(Vector2d(400.0, -50.0));
+    // Ts.push_back(Vector2d(-100.0, -200.0));
+    // Ts.push_back(Vector2d(-800.0, 300.0));
 
+    // Rotations
     vector<double> thetas;
     int thetaN = 23;
     for (int i = 0; i < thetaN; ++i) {
       thetas.push_back(i * 2 * M_PI / thetaN);
     }
 
+    // Anticlothoid circle radius
     vector<double> as;
-    as.push_back(1.0);
+    // as.push_back(1.0);
     // as.push_back(0.4);
-    // as.push_back(76);
-    as.push_back(280);
-    as.push_back(700);
+    as.push_back(76);
+    // as.push_back(280);
+    // as.push_back(700);
 
+    // Points noise
     vector<double> noise;
     noise.push_back(0.0);
     noise.push_back(0.001);
-    noise.push_back(0.005);
-    // noise.push_back(1.0);
-    // noise.push_back(2.0);
+    noise.push_back(0.01);
+    noise.push_back(0.1);
 
     for (double a : as) {
       for (Vector2d T : Ts) {
@@ -227,29 +268,9 @@ public:
     return tests;
   }
 
-  Vec2 sample_ac(double t, double a) {
-    double x = a * cos(t) + t * a * sin(t);
-    double y = a * sin(t) - t * a * cos(t);
-    return Vec2(x, y);
-  }
-
-  vector<Vec2> sample_ac(FittingTest ft) {
-    double a = ft.a;
-    double noise = ft.noise;
-    vector<double> ts = ft.ts;
-    Vec2 T = ft.T;
-    double theta = ft.theta;
-
-    vector<Vec2> pts;
-    pts.reserve(ts.size());
-    for (double t : ts) {
-      Vec2 pt = sample_ac(t, a);
-      pt += a * noise * Vec2::Random(); // Noise
-      pts.push_back(Rotation2D(theta) * pt + T);
-    }
-    return pts;
-  }
-
+  // ==========================================================================
+  //                                Plotting
+  // ==========================================================================
   void createDirectory(const string dirname) {
     // Delete and create directory
     error_code ec;
@@ -267,8 +288,8 @@ public:
     }
   }
 
-  void exportPlotData(const string filepath, FittingTest ft, vector<Vec2> pts,
-                      AnticlothoidPtr acp) {
+  void exportPlotData(const string filepath, AnticlothoidFittingTestParams ft,
+                      vector<Vec2> pts, AnticlothoidPtr acp, double error) {
     // This outputs a file for plot.py to read.
     ofstream file(filepath);
     if (!file.is_open()) {
@@ -276,7 +297,7 @@ public:
       return;
     }
 
-    // == Sampled points ==
+    // Sampled points
     file << "Sampled points" << "\n";
     file << "x,y" << "\n";
     for (Vec2 pt : pts) {
@@ -284,7 +305,7 @@ public:
     }
     file << "\n";
 
-    // == Anticlothoid fitted ==
+    // Anticlothoid Predicted
     // plot circle
     file << "Fitted Anticlothoid" << "\n";
     Matrix2d mat_f;
@@ -294,13 +315,22 @@ public:
     double cos_theta = mat_f(0, 0);
     double sin_theta = mat_f(1, 0);
     double theta_f = atan2(sin_theta, cos_theta);
-    file << "startx,starty,a_radius,theta" << "\n";
-    file << T_f[0] << "," << T_f[1] << "," << a_f << "," << theta_f << "\n";
+    double start_angle = acp->angle(0.0);
+    double end_angle = acp->angle(acp->length());
+    double length = acp->length();
+    double start_radius = acp->startRadius();
+    double end_radius = acp->endRadius();
+    file << "startx,starty,a_radius,theta,start_angle,end_angle,length,start_"
+            "radius,end_radius,error"
+         << "\n";
+    file << T_f[0] << "," << T_f[1] << "," << a_f << "," << theta_f << ","
+         << start_angle << "," << end_angle << "," << length << ","
+         << start_radius << "," << end_radius << "," << error << "\n";
     file << "x,y\n";
 
-    // plot fitted curve segment
+    // plot predicted curve segment
     double L_f = acp->length();
-    constexpr int N = 20;
+    int N = pts.size();
     for (int step = 0; step <= N; ++step) {
       double s = L_f * (static_cast<double>(step) / N);
       Vec2 pos;
@@ -309,20 +339,31 @@ public:
     }
     file << "\n";
 
-    // == Anticlothoid Actual==
-    file << "Actual Anticlothoid" << "\n";
+    // Anticlothoid Actual
     // plot circle
-    Vec2 T_a = ft.T;
+    file << "Actual Anticlothoid" << "\n";
+    AnticlothoidPtr actualPtr = ft.getCurve();
+    Vec2 T_a;
     Matrix2d mat_a;
-    double theta_a = ft.theta;
-    mat_a << cos(theta_a), -sin(theta_a), sin(theta_a), cos(theta_a);
-
-    double a_a = ft.a;
-    file << "startx,starty,a_radius,theta" << "\n";
-    file << T_a[0] << "," << T_a[1] << "," << a_a << "," << theta_a << "\n";
+    actualPtr->getTransform(mat_a, T_a);
+    double a_a = actualPtr->getA();
+    cos_theta = mat_a(0, 0);
+    sin_theta = mat_a(1, 0);
+    double theta_a = atan2(sin_theta, cos_theta);
+    start_angle = actualPtr->angle(0.0);
+    end_angle = actualPtr->angle(actualPtr->length());
+    length = actualPtr->length();
+    start_radius = actualPtr->startRadius();
+    end_radius = actualPtr->endRadius();
+    file << "startx,starty,a_radius,theta,start_angle,end_angle,length,start_"
+            "radius,end_radius,error"
+         << "\n";
+    file << T_a[0] << "," << T_a[1] << "," << a_a << "," << theta_a << ","
+         << start_angle << "," << end_angle << "," << length << ","
+         << start_radius << "," << end_radius << "," << -1 << "\n";
     file << "x,y\n";
 
-    // plot fitted curve segment
+    // plot curve segment
     double t0 = ft.ts[0];
     double tn = ft.ts[ft.ts.size() - 1];
     for (int step = 0; step <= N; ++step) {
@@ -358,11 +399,9 @@ public:
   }
 
   static string today_YYMMDD() {
-    // get current time as time_t
     auto now = std::chrono::system_clock::now();
     std::time_t t = std::chrono::system_clock::to_time_t(now);
 
-    // convert to local tm structure
     std::tm tm;
 #if defined(_MSC_VER)
     localtime_s(&tm, &t);
@@ -370,7 +409,6 @@ public:
     localtime_r(&t, &tm);
 #endif
 
-    // format into a string
     std::ostringstream oss;
     oss << std::put_time(&tm, "%y%m%d");
     return oss.str();

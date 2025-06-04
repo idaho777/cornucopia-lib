@@ -31,9 +31,10 @@
     const lbl = document.createElement("div");
     lbl.className = "label";
     lbl.textContent =
-      `s=[${group.s[0]}, ${group.s[1]}]   ` +
-      `T=[${group.T[0]}, ${group.T[1]}]   ` +
-      `a=${group.a}   noise=${group.noise}`;
+      `Arc Length Range s=[${group.s[0]}, ${group.s[1]}],` +
+      `Translation T=(${group.T[0]}, ${group.T[1]}),   ` +
+      `Anticlothoid Circle Radius a=${group.a},   ` +
+      `Vertex noise=${group.noise}`;
     grp.appendChild(lbl);
 
     // build image URLs
@@ -47,7 +48,7 @@
         `Arc Length: [${group.s[0]} - ${group.s[1]}]<br>` +
         `Translation: (${group.T[0]}, ${group.T[1]})<br>` +
         `Rotation: ${img.rot}r<br>` +
-        `Radius: ${group.a}<br>` +
+        `Circle Radius: ${group.a}<br>` +
         `Noise: ${group.noise}`,
     );
 
